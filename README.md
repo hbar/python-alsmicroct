@@ -13,6 +13,6 @@ Tomography analysis requires proessing of large (many GB) datasets that contain 
 [TomoPy]:https://tomopy.readthedocs.io/en/latest/index.html
 
 ## About TomoPy:
-[TomoPy][TomoPy] is an open-source Python package for tomographic data processing and image reconstruction. Anaconda is the prefered python distribution for using TomoPy it can be installed directly from TomoPy's [conda install channel][TomoPyConda]
+[TomoPy][TomoPy] is an open-source Python package for tomographic data processing and image reconstruction. Anaconda is the prefered python distribution for using TomoPy it can be installed directly from TomoPy's [conda channel][TomoPyConda].
 
 [TomoPyConda]:https://anaconda.org/dgursoy/tomopy
