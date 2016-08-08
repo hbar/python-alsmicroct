@@ -1,6 +1,6 @@
 import reconstruction
 
-execfile("NuclearCMC_raw_data_file_list.py")
+execfile("../filepath/NuclearCMC_raw_data_file_list.py")
 
 pathList = reconstruction.NERSC_ArchivePath(fileList)
 

@@ -16,3 +16,16 @@ Tomography analysis requires proessing of large (many GB) datasets that contain 
 [TomoPy][TomoPy] is an open-source Python package for tomographic data processing and image reconstruction. Anaconda is the prefered python distribution for using TomoPy it can be installed directly from TomoPy's [conda channel][TomoPyConda].
 
 [TomoPyConda]:https://anaconda.org/dgursoy/tomopy
+
+## Repo File Structure
+
+`lib/` contains functions and classes used for data analysis
+
+
+`applications/` contains programs that utilize functions from lib and TomoPy.
+
+`filepath/` contains input files that provide lists of paths the datasets that are to be reconstructed or processed.
+
+`batch/` contains .slurm scripts that are used to submit jobs to the [NERSC] supercomputer.
+
+[NERSC]: http://www.nersc.gov/
