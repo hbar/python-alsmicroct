@@ -1,0 +1,10 @@
+*.py~
+*.txt~
+*.dat~
+*.pyc
+.gitignore~
+*.sh~
+*.md~
+*.pyc
+*~
+.metadata
