@@ -327,15 +327,16 @@ def reconstructMPI(filename,inputPath="", outputPath="", COR=COR, doOutliers=doO
 				rec = tomopy.recon(tomo, tomopy.angles(tomo.shape[0], 270, 90), center=cor_rec, algorithm='gridrec', filter_name='butterworth', filter_par=butterworthpars)
 				#rec = tomopy.recon(tomo, tomopy.angles(tomo.shape[0], 180+angularrange/2, 180-angularrange/2), center=cor_rec, algorithm='gridrec', filter_name='butterworth', filter_par=butterworthpars)		
 				rec /= pxsize  # intensity values in cm^-1
-				if pad_sino:
+
+				if doPolarRing:  # Apply polar ring filter
+					logging.info('Doing ring (polar mean filter) function...')
+					rec = tomopy.remove_ring(rec, theta_min=Rarc, rwidth=Rmaxwidth, thresh_max=Rtmax, thresh=Rthr, thresh_min=Rtmin)
+
+				if pad_sino: # Un-pad sinogram
 					rec = tomopy.circ_mask(rec[:, npad:-npad, npad:-npad], 0)
 				else:
 					rec = tomopy.circ_mask(rec, 0, ratio=1.0, val=0.0)
 			
-				if doPolarRing:
-					logging.info('Doing ring (polar mean filter) function...')
-					rec = tomopy.remove_ring(rec, theta_min=Rarc, rwidth=Rmaxwidth, thresh_max=Rtmax, thresh=Rthr, thresh_min=Rtmin)
-
 				logging.info('Writing reconstruction slices to %s', filename[x])
 				#dxchange.write_tiff_stack(rec, fname=outputPath+'alpha'+str(alphaReg)+'/rec'+filename[x]+'/rec'+filename[x], start=sinorange[0]+y*num_sino_per_substack)
 				dxchange.write_tiff_stack(rec, fname=outputPath + 'recon_'+filename[x]+'/recon_'+filename[x], start=sinorange[0]+y*num_sino_per_substack)
