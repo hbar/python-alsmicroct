@@ -10,6 +10,6 @@ import numpy as np
 import tomopy
 import dxchange
 import h5py
-import python-TomographyTools
 
-#import reconstruction.py
+from .TomographyTools import reconstruction
+from .TomographyTools import process

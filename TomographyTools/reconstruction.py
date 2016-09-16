@@ -3,15 +3,16 @@
 import os
 import sys
 import time
-from mpi4py import MPI
+from mpi4py import MPI # message passing interface (MPI) for parallel computing
 
 import logging
 logging.basicConfig(level=logging.INFO, stream=sys.stdout,format='%(message)s')
 
-import numpy as np
-import tomopy
+import numpy as np # fundamental numeric operations package
+import tomopy # tomographic reconstrcution package
 import dxchange
 import h5py
+
 
 # =============================================================================
 def read_als_832h5_metadata(fname):
