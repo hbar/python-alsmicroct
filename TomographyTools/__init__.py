@@ -12,4 +12,5 @@ import dxchange
 import h5py
 
 from .TomographyTools import reconstruction
-from .TomographyTools import process
+from .TomographyTools import image_processing
+from .TomographyTools import data_management
