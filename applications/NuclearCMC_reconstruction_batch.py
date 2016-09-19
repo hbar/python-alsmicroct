@@ -1,3 +1,6 @@
+import sys
+sys.path.append('../TomographyTools/')
+
 import reconstruction
 
 execfile("../filepath/NuclearCMC_raw_data_file_list.py")
