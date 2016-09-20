@@ -134,22 +134,27 @@ butterworthpars = [.25,2]
 doPolarRing = True
 Rarc=30
 Rmaxwidth=30
-Rtmax=300.0
-Rthr=300.0
-Rtmin=-100.0
+Rtmax=3000.0
+Rthr=3000.0
+Rtmin=-1000.0
 
 useAutoCOR = False # use auto COR on all
+
 use360to180 = False
-num_sino_per_substack = 270
 
+recon_slice = False # input True for center slice, input slice number for specific slice
 
-def reconstruct(filename,inputPath="", outputPath="", COR=COR, doOutliers=doOutliers, outlier_diff=outlier_diff, outlier_size=outlier_size, doFWringremoval=doFWringremoval,ringSigma=ringSigma,ringLevel=ringLevel,ringWavelet=ringWavelet,pad_sino=pad_sino,doPhaseRetrieval=doPhaseRetrieval,propagation_dist=propagation_dist,kev=kev,alphaReg=alphaReg,butterworthpars=butterworthpars,doPolarRing=doPolarRing,Rarc=Rarc,Rmaxwidth=Rmaxwidth,Rtmax=Rtmax,Rthr=Rthr,Rtmin=Rtmin,useAutoCOR=useAutoCOR,use360to180=use360to180,num_sino_per_substack=num_sino_per_substack):
+#num_sino_per_substack = 270
+num_substacks = 10
+
+def reconstruct(filename,inputPath="", outputPath="", COR=COR, doOutliers=doOutliers, outlier_diff=outlier_diff, outlier_size=outlier_size, doFWringremoval=doFWringremoval, ringSigma=ringSigma,ringLevel=ringLevel, ringWavelet=ringWavelet,pad_sino=pad_sino,  doPhaseRetrieval=doPhaseRetrieval, propagation_dist=propagation_dist, kev=kev,alphaReg=alphaReg, butterworthpars=butterworthpars, doPolarRing=doPolarRing,Rarc=Rarc, Rmaxwidth=Rmaxwidth, Rtmax=Rtmax, Rthr=Rthr, Rtmin=Rtmin, useAutoCOR=useAutoCOR, use360to180=use360to180, num_substacks=num_substacks,recon_slice=recon_slice):
 
 	# Convert filename to list type if only one file name is given
 	if type(filename) != list:
 		filename=[filename]
 
-	# If useAutoCor is true, list of COR will be generated with boolean False for entries, this will initiate autoCOR for every dataset
+	# If useAutoCor == true, a list of COR will be automatically calculated for all files
+	# If a list of COR is given, only entries with boolean False will use automatic COR calculation
 	if useAutoCOR==True or (len(COR) != len(filename)):
 		logging.info('using auto COR for all input files')
 		COR = [False]*len(filename)
@@ -159,11 +164,26 @@ def reconstruct(filename,inputPath="", outputPath="", COR=COR, doOutliers=doOutl
 
 		fdata, gdata = read_als_832h5_metadata(inputPath[x]+filename[x]+'.h5')
 		pxsize = float(gdata['pxsize'])/10.0 # convert from metadata (mm) to this script (cm)
-		sinorange = [0, int(gdata['nslices'])]
-		num_sino_per_substack = num_sino_per_substack
-		#sinorange = [975, 1025]
-		#num_sino_per_substack = 50
-		substacks = (sinorange[1]-sinorange[0])/num_sino_per_substack
+		numslices = int(gdata['nslices'])
+
+		# recon_slice == True, only center slice will be reconstructed
+		# if integer is given, a specific 		
+		if recon_slice != False:
+			if (type(recon_slice) == int) and (recon_slice =< numslices):
+				sinorange [recon_slice-1, recon_slice]
+			else:
+				sinorange = [numslices//2-1, numslices//2]
+		else:
+			sinorange = [0, numslices]
+
+		# Calculate number of substacks (chunks)
+		substacks = num_substacks #(sinorange[1]-sinorange[0]-1)//num_sino_per_substack+1
+
+		if (sinorange[1]-sinorange[0]) => substacks:
+			num_sino_per_substack = (sinorange[1]-sinorange[0])//num_substacks
+		else:
+			num_sino_per_substack = 1
+
 	
 		firstcor, lastcor = 0, int(gdata['nangles'])-1
 		projs, flat, dark, floc = dxchange.read_als_832h5(inputPath[x]+filename[x]+'.h5', ind_tomo=(firstcor, lastcor))
@@ -208,8 +228,8 @@ def reconstruct(filename,inputPath="", outputPath="", COR=COR, doOutliers=doOutl
 
 			if doPhaseRetrieval:
 				logging.info('Doing Phase retrieval...')
-				tomo = tomopy.retrieve_phase(tomo, pixel_size=pxsize, dist=propagation_dist, energy=kev, alpha=alphaReg, pad=True)	
-					
+				#tomo = tomopy.retrieve_phase(tomo, pixel_size=pxsize, dist=propagation_dist, energy=kev, alpha=alphaReg, pad=True)	
+				tomo = tomopy.retrieve_phase(tomo, pixel_size=pxsize, dist=propagation_dist, energy=kev, alpha=alphaReg, pad=True)		
 
 			logging.info('Doing recon (gridrec) function and scaling/masking, with cor %f...',cor_rec)
 			rec = tomopy.recon(tomo, tomopy.angles(tomo.shape[0], 270, 90), center=cor_rec, algorithm='gridrec', filter_name='butterworth', filter_par=butterworthpars)
@@ -230,14 +250,14 @@ def reconstruct(filename,inputPath="", outputPath="", COR=COR, doOutliers=doOutl
 		logging.info('Reconstruction Complete: '+ filename[x])
 
 
-
+"""
 
 #==============================================================================
 # Reconstruct function with MPI Modifications
 #==============================================================================
 
 
-def reconstructMPI(filename,inputPath="", outputPath="", COR=COR, doOutliers=doOutliers, outlier_diff=outlier_diff, outlier_size=outlier_size, doFWringremoval=doFWringremoval,ringSigma=ringSigma,ringLevel=ringLevel,ringWavelet=ringWavelet,pad_sino=pad_sino,doPhaseRetrieval=doPhaseRetrieval,propagation_dist=propagation_dist,kev=kev,alphaReg=alphaReg,butterworthpars=butterworthpars,doPolarRing=doPolarRing,Rarc=Rarc,Rmaxwidth=Rmaxwidth,Rtmax=Rtmax,Rthr=Rthr,Rtmin=Rtmin,useAutoCOR=useAutoCOR,use360to180=use360to180,num_sino_per_substack=num_sino_per_substack):
+def reconstructMPI(filename,inputPath="", outputPath="", COR=COR, doOutliers=doOutliers, outlier_diff=outlier_diff, outlier_size=outlier_size, doFWringremoval=doFWringremoval,ringSigma=ringSigma,ringLevel=ringLevel,ringWavelet=ringWavelet,pad_sino=pad_sino,doPhaseRetrieval=doPhaseRetrieval,propagation_dist=propagation_dist,kev=kev,alphaReg=alphaReg,butterworthpars=butterworthpars,doPolarRing=doPolarRing,Rarc=Rarc,Rmaxwidth=Rmaxwidth,Rtmax=Rtmax,Rthr=Rthr,Rtmin=Rtmin,useAutoCOR=useAutoCOR,use360to180=use360to180,num_substacks=num_substacks):
 
 	# get MPI rank for process
  	comm = MPI.COMM_WORLD
@@ -328,3 +348,6 @@ def reconstructMPI(filename,inputPath="", outputPath="", COR=COR, doOutliers=doO
 				#dxchange.write_tiff_stack(rec, fname=outputPath+'alpha'+str(alphaReg)+'/rec'+filename[x]+'/rec'+filename[x], start=sinorange[0]+y*num_sino_per_substack)
 				dxchange.write_tiff_stack(rec, fname=outputPath + 'recon_'+filename[x]+'/recon_'+filename[x], start=sinorange[0]+y*num_sino_per_substack)
 			logging.info('Reconstruction Complete: '+ filename[x]+', Process '+rank)
+
+"""
+
