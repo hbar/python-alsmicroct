@@ -13,22 +13,6 @@ import tomopy # tomographic reconstrcution package
 import dxchange
 import h5py
 
-
-# =============================================================================
-def import_file_list(TextFilePath='../filepath/UnformatedFileList_Test.txt',comment='#'):
-	"""
-	Converts unformatted .txt file with \n separated file names into python list
-	"""
-	textFile = open(TextFilePath,'r')
-	data = textFile.readlines()
-	fileList = []
-	for i in range(len(data)):
-		data[i] = data[i].strip(" ")
-		data[i]=data[i].strip("\n")
-		if data[i][0] != comment:
-			fileList.append(data[i])
-	return(fileList)
-
 # =============================================================================
 def read_als_832h5_metadata(fname):
 	"""

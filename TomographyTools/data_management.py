@@ -10,7 +10,39 @@ import tomopy # tomographic reconstrcution package
 import dxchange
 import h5py
 
-#------------------------------------------------------------------------------
+import glob
+# =============================================================================
+def list_from_txt(TextFilePath='../filepath/UnformatedFileList_Test.txt',comment='#'):
+	"""
+	Converts unformatted .txt file with \n separated file names into python list
+	"""
+
+	if '.py' in TextFilePath: # if file path is actually a python script, run script instead
+		execfile(TextFilePath)
+	else:
+		textFile = open(TextFilePath,'r') # open text file
+		data = textFile.readlines() #read lines of text into list of strings
+		fileList = []
+		for i in range(len(data)):
+			data[i] = data[i].strip(" ") # remove spaces
+			data[i]=data[i].strip("\n")  # remove returns
+			if data[i][0] != comment:
+				fileList.append(data[i]) # keep lines that are not commented
+		return(fileList)
+
+# =============================================================================
+
+def list_h5_files(searchDir): 
+	"""
+	Finds all .h5 files in the search directory
+	"""
+	if searchDir[-1] == '/': 
+		h5_list = glob.glob(searchDir+"*.h5"
+	else:
+		h5_list = glob.glob(searchDir+"/*.h5"
+	return(h5_list)
+
+# =============================================================================
 NERSC_DefaultPath="/global/project/projectdirs/als/spade/warehouse/als/bl832/"
 userDefault = "phosemann"
 
@@ -31,6 +63,8 @@ def NERSC_ArchivePath(filename,useraccount=userDefault,archivepath=NERSC_Default
 	print pathOut
 	return pathOut
 
+# =============================================================================
+
 def NERSC_StageData(filename,useraccount=userDefault):
 	'''
 	curl command sent to spot.nersc to stage data if stored on tape
@@ -50,6 +84,7 @@ def NERSC_StageData(filename,useraccount=userDefault):
 		print(command_string)
 		time.sleep(1)
 
+# =============================================================================
 
 def NERSC_RetreiveData(filename,destinationpath,useraccount=userDefault,archivepath=NERSC_DefaultPath):
 	'''
