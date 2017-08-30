@@ -11,7 +11,276 @@ import dxchange
 import h5py
 
 import glob
+
+import getpass # allows commandline password input
+
+import requests # tools for web requests/communication with online APIs
+
+
 # =============================================================================
+# Login
+
+"""
+POST
+
+URL:
+https://portal-auth.nersc.gov/als/auth
+
+EXAMPLE:
+
+% curl -k -c cookies.txt -X POST -d "username=[your_username]&password=[your_password]" https://portal-auth.nersc.gov/als/auth
+
+"""
+
+def authenticate():
+	"""
+	Prompts user for username and password
+	"""
+	url_authentication = "https://portal-auth.nersc.gov/als/auth"
+
+	spot_username = raw_input("username:")
+	spot_password = getpass.getpass()
+	
+	s = requests.Session()
+	r = s.get(url_authentication)
+	r = s.post(url_authentication,{"username":spot_username,"password":spot_password})
+	del spot_password
+	return s
+
+
+
+# =============================================================================
+# Search Datasets
+
+"""
+GET
+
+URL:
+https://portal-auth.nersc.gov/als/hdf/search
+
+Arguments:
+limitnum: number of results to show
+skipnum: number of results to skip
+sortterm: database field on which to sort (commonly fs.stage_date or appmetadata.sdate)
+sorttype: desc or asc
+search: query
+
+Result:
+JSON List
+
+EXAMPLE:
+
+% curl -k -b cookies.txt -X GET "https://portal-auth.nersc.gov/als/hdf/search?skipnum=0&limitnum=10&sortterm=fs.stage_date&sorttype=desc&search=end_station=bl832"
+
+"""
+
+def spot_search(search,
+	limitnum = 10, # number of results to show
+	skipnum = 0, # number of results to skip
+	sortterm = "fs.stage_date" # database field on which to sort (commonly fs.stage_date or appmetadata.sdate)
+	sorttype = "desc" # sorttype: desc or asc	
+	session=None):
+	
+
+	if session = None:
+		authenticate()
+
+	url_search = "https://portal-auth.nersc.gov/als/hdf/search"
+	r = session.get(url_search,{"limitnum": limitnum, "skipnum":skipnum, "sortterm": sortterm, "sorttype": sorttype, "search": search})
+	return r.json
+
+# =============================================================================
+# Find Derived Datasets (norm, sino, gridrec, imgrec) from raw dataset
+
+"""
+GET
+
+URL:
+https://portal-auth.nersc.gov/als/hdf/dataset
+
+Arguments:
+dataset: raw dataset
+
+Result:
+JSON List
+
+EXAMPLE:
+
+% curl -k -b cookies.txt -X GET "https://portal-auth.nersc.gov/als/hdf/dataset?dataset=20130713_185717_Chilarchaea_quellon_F_9053427_IKI_"
+
+"""
+
+# =============================================================================
+# View Attributes for Single Dataset and Image Within Dataset
+
+"""
+GET
+
+URL:
+https://portal-auth.nersc.gov/als/hdf/attributes/[dataset]
+
+Arguments:
+group: path in hdf5 file. Set to "/" for overall attributes
+
+Result:
+JSON Array
+
+EXAMPLE:
+
+% curl -k -b cookies.txt -X GET "https://portal-auth.nersc.gov/als/hdf/attributes/als/bl832/hmwood/20130713_185717_Chilarchaea_quellon_F_9053427_IKI_/raw/20130713_185717_Chilarchaea_quellon_F_9053427_IKI_.h5?group=/"
+
+"""
+
+def spot_attributes(dataset,session=None):
+
+	url_attributes = "https://portal-auth.nersc.gov/als/hdf/attributes/"
+
+	r = session.get(url_attributes + dataset,{"group":"/"})
+
+	return r.json
+
+# =============================================================================
+# List Images Within Dataset
+
+"""
+ GET
+
+URL:
+https://portal-auth.nersc.gov/als/hdf/listimages/[dataset]
+
+Arguments:
+None
+
+Result:
+JSON List (paths to images within the HDF5 file)
+
+EXAMPLE:
+
+% curl -k -b cookies.txt -X GET "https://portal-auth.nersc.gov/als/hdf/listimages/als/bl832/hmwood/20130713_185717_Chilarchaea_quellon_F_9053427_IKI_/raw/20130713_185717_Chilarchaea_quellon_F_9053427_IKI_.h5"
+
+"""
+
+# =============================================================================
+# Stage Dataset From Tape to Disk if Required
+
+"""
+ GET
+
+URL:
+https://portal-auth.nersc.gov/als/hdf/stageifneeded/[dataset]
+
+Arguments:
+None
+
+Result:
+JSON Array
+
+EXAMPLE:
+
+% curl -k -b cookies.txt -X GET "https://portal-auth.nersc.gov/als/hdf/stageifneeded/als/bl832/hmwood/20130713_185717_Chilarchaea_quellon_F_9053427_IKI_/raw/20130713_185717_Chilarchaea_quellon_F_9053427_IKI_.h5"
+
+"""
+
+# =============================================================================
+# Download Dataset
+
+"""
+ GET
+
+URL:
+https://portal-auth.nersc.gov/als/hdf/download/[dataset]
+
+Arguments:
+None
+
+Result:
+H5 File
+
+EXAMPLE:
+
+% curl -k -b cookies.txt -X GET "https://portal-auth.nersc.gov/als/hdf/download/als/bl832/hmwood/20130713_185717_Chilarchaea_quellon_F_9053427_IKI_/raw/20130713_185717_Chilarchaea_quellon_F_9053427_IKI_.h" > file.h5
+
+"""
+
+
+
+# =============================================================================
+# Download Rawdata For Individual Image
+
+"""
+ GET
+
+URL:
+https://portal-auth.nersc.gov/als/hdf/rawdata/[dataset]
+
+Arguments:
+group: path in HDF5 file to image
+
+Result:
+JSON Array
+
+EXAMPLE:
+
+% curl -k -b cookies.txt -X GET "https://portal-auth.nersc.gov/als/hdf/rawdata/als/bl832/hmwood/20130713_185717_Chilarchaea_quellon_F_9053427_IKI_/norm/20130713_185717_Chilarchaea_quellon_F_9053427_IKI_-norm-20130714_192637.h5?group=/20130713_185717_Chilarchaea_quellon_F_9053427_IKI_/20130713_185717_Chilarchaea_quellon_F_9053427_IKI__0000_0640.tif"
+
+"""
+
+
+# =============================================================================
+# Get Download URLs for .tif and .png files for individual image
+
+"""
+ GET
+
+URL:
+https://portal-auth.nersc.gov/als/hdf/image/[dataset]
+
+Arguments:
+group: path in HDF5 file to image
+
+Result:
+JSON Array
+
+EXAMPLE:
+
+% curl -k -b cookies.txt -X GET "https://portal-auth.nersc.gov/als/hdf/image/als/bl832/hmwood/20130713_185717_Chilarchaea_quellon_F_9053427_IKI_/norm/20130713_185717_Chilarchaea_quellon_F_9053427_IKI_-norm-20130714_192637.h5?group=/20130713_185717_Chilarchaea_quellon_F_9053427_IKI_/20130713_185717_Chilarchaea_quellon_F_9053427_IKI__0000_0640.tif"
+
+"""
+
+
+
+# =============================================================================
+# Run TomoPy on an existing dataset
+
+"""
+ GET
+
+URL:
+https://portal-auth.nersc.gov/als/hdf/tomopyjob
+
+Arguments:
+dataset: raw dataset
+
+Result:
+JSON List
+
+EXAMPLE:
+
+% curl -k -b cookies.txt -X GET "https://portal-auth.nersc.gov/als/hdf/tomopyjob?dataset=20130713_185717_Chilarchaea_quellon_F_9053427_IKI_"
+
+"""
+
+
+
+# =============================================================================
+#
+
+"""
+Older functions below
+"""
+
+# =============================================================================
+
 def list_from_txt(TextFilePath='../filepath/UnformatedFileList_Test.txt',comment='#'):
 	"""
 	Converts unformatted .txt file with \n separated file names into python list
@@ -37,14 +306,14 @@ def list_h5_files(searchDir):
 	Finds all .h5 files in the search directory
 	"""
 	if searchDir[-1] == '/': 
-		h5_list = glob.glob(searchDir+"*.h5"
+		h5_list = glob.glob(searchDir+"*.h5")
 	else:
-		h5_list = glob.glob(searchDir+"/*.h5"
+		h5_list = glob.glob(searchDir+"/*.h5")
 	return(h5_list)
 
 # =============================================================================
 NERSC_DefaultPath="/global/project/projectdirs/als/spade/warehouse/als/bl832/"
-userDefault = "phosemann"
+userDefault = "hsbarnard"
 
 def NERSC_ArchivePath(filename,useraccount=userDefault,archivepath=NERSC_DefaultPath):
 	'''
@@ -86,7 +355,11 @@ def NERSC_StageData(filename,useraccount=userDefault):
 
 # =============================================================================
 
-def NERSC_RetreiveData(filename,destinationpath,useraccount=userDefault,archivepath=NERSC_DefaultPath):
+def NERSC_RetreiveData(filename,
+	destinationpath,
+	useraccount=userDefault,
+	archivepath=NERSC_DefaultPath):
+
 	'''
 	Downloads raw tomography projection data in NERSC from NERSC Archives 
 	for a list of file names
@@ -111,3 +384,6 @@ def NERSC_RetreiveData(filename,destinationpath,useraccount=userDefault,archivep
 		logging.info("begin transfer: "+filePathIn[i])
 		os.system("cp " + filePathIn[i] + " " + filePathOut[i])
 		logging.info("transfer complete: ")
+
+
+
