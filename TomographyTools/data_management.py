@@ -17,10 +17,28 @@ import getpass # allows commandline password input
 import requests # tools for web requests/communication with online APIs
 
 
+
+# Create spot session class
+# This class includes all functions for authenticating and communcating with SPOT API
+
+class spotSession():
+
 # =============================================================================
 # Login
+	def __init__ (self):
+		"""
+		Prompts user for username and password
+		"""
+		self.URL_authentication = "https://portal-auth.nersc.gov/als/auth"
 
-"""
+		spot_username = raw_input("username:")
+		spot_password = getpass.getpass()
+
+		s = requests.Session()
+		r = s.get(self.URL_authentication)
+		r = s.post(self.URL_authentication,{"username":spot_username,"password":spot_password})
+		self.session = s
+	"""
 POST
 
 URL:
@@ -30,29 +48,26 @@ EXAMPLE:
 
 % curl -k -c cookies.txt -X POST -d "username=[your_username]&password=[your_password]" https://portal-auth.nersc.gov/als/auth
 
-"""
-
-def authenticate():
 	"""
-	Prompts user for username and password
-	"""
-	url_authentication = "https://portal-auth.nersc.gov/als/auth"
-
-	spot_username = raw_input("username:")
-	spot_password = getpass.getpass()
-	
-	s = requests.Session()
-	r = s.get(url_authentication)
-	r = s.post(url_authentication,{"username":spot_username,"password":spot_password})
-	del spot_password
-	return s
-
-
 
 # =============================================================================
 # Search Datasets
 
-"""
+	def search(self,
+		search,
+		session=None,
+		limitnum = 10, # number of results to show
+		skipnum = 0, # number of results to skip
+		sortterm = "fs.stage_date", # database field on which to sort (commonly fs.stage_date or appmetadata.sdate)
+		sorttype = "desc"): # sorttype: desc or asc
+
+		self.URL_search = "https://portal-auth.nersc.gov/als/hdf/search"
+		self.PARAMS_search = {"limitnum": limitnum, "skipnum":skipnum, "sortterm": sortterm, "sorttype": sorttype, "search": search}
+		r = self.session.get(url=self.URL_search,params=self.PARAMS_search)
+		return r.json()
+
+
+	"""
 GET
 
 URL:
@@ -72,25 +87,19 @@ EXAMPLE:
 
 % curl -k -b cookies.txt -X GET "https://portal-auth.nersc.gov/als/hdf/search?skipnum=0&limitnum=10&sortterm=fs.stage_date&sorttype=desc&search=end_station=bl832"
 
-"""
-
-def spot_search(search,
-	limitnum = 10, # number of results to show
-	skipnum = 0, # number of results to skip
-	sortterm = "fs.stage_date" # database field on which to sort (commonly fs.stage_date or appmetadata.sdate)
-	sorttype = "desc" # sorttype: desc or asc	
-	session=None):
-	
-
-	if session = None:
-		authenticate()
-
-	url_search = "https://portal-auth.nersc.gov/als/hdf/search"
-	r = session.get(url_search,{"limitnum": limitnum, "skipnum":skipnum, "sortterm": sortterm, "sorttype": sorttype, "search": search})
-	return r.json
+	"""
 
 # =============================================================================
 # Find Derived Datasets (norm, sino, gridrec, imgrec) from raw dataset
+
+	def derived_datasets(self,dataset):
+		
+		self.URL_DerivedDatasets = "https://portal-auth.nersc.gov/als/hdf/dataset"
+		self.PARAMS_DerivedDatasets = {"dataset":dataset}
+
+		r = self.session.get(self.URL_DerivedDatasets,params=self.PARAMS_DerivedDatasets)
+
+		return r.json()
 
 """
 GET
@@ -110,10 +119,19 @@ EXAMPLE:
 
 """
 
+
 # =============================================================================
 # View Attributes for Single Dataset and Image Within Dataset
 
-"""
+	def spot_attributes(self.dataset):
+
+		self.URL_attributes = "https://portal-auth.nersc.gov/als/hdf/attributes/"
+
+		r = session.get(self.URL_attributes + dataset,{"group":"/"})
+
+		return r.json()
+
+	"""
 GET
 
 URL:
@@ -129,15 +147,8 @@ EXAMPLE:
 
 % curl -k -b cookies.txt -X GET "https://portal-auth.nersc.gov/als/hdf/attributes/als/bl832/hmwood/20130713_185717_Chilarchaea_quellon_F_9053427_IKI_/raw/20130713_185717_Chilarchaea_quellon_F_9053427_IKI_.h5?group=/"
 
-"""
+	"""
 
-def spot_attributes(dataset,session=None):
-
-	url_attributes = "https://portal-auth.nersc.gov/als/hdf/attributes/"
-
-	r = session.get(url_attributes + dataset,{"group":"/"})
-
-	return r.json
 
 # =============================================================================
 # List Images Within Dataset
