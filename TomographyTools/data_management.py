@@ -25,17 +25,19 @@ class spotSession():
 
 # =============================================================================
 # Login
-	def __init__ (self):
+	def __init__ (self,username=None):
 		"""
 		Prompts user for username and password
 		"""
 		self.URL_authentication = "https://portal-auth.nersc.gov/als/auth"
-
+		self.username = username
 		spot_username = raw_input("username:")
 		spot_password = getpass.getpass()
 
+		if username == None:
+			self.spot_username=spot_username # Stores username to be used in filepaths
+
 		s = requests.Session()
-		r = s.get(self.URL_authentication)
 		r = s.post(self.URL_authentication,{"username":spot_username,"password":spot_password})
 		self.session = s
 	"""
@@ -49,6 +51,35 @@ EXAMPLE:
 % curl -k -c cookies.txt -X POST -d "username=[your_username]&password=[your_password]" https://portal-auth.nersc.gov/als/auth
 
 	"""
+
+# =============================================================================
+# Check Authentication
+
+	def check_authentication(self):
+		r = self.session.get(self.URL_authentication)
+		#return r.json()
+		return r.json()['auth']
+
+	def authentication(self):
+		r = s.get(self.URL_authentication)
+		if r.json()['auth'] == False:
+			print "Authentication required to start a new session"
+			spot_username = raw_input("username:")
+			spot_password = getpass.getpass()
+			s = requests.Session()
+			r = s.post(self.URL_authentication,{"username":spot_username,"password":spot_password})
+			self.session = s
+		r = s.get(self.URL_authentication)
+		return r.json()
+
+# =============================================================================
+# Close session
+# *** DOES NOT WORK ***
+	def close(self):
+		self.session.close()
+		r = self.session.get(self.URL_authentication)
+		return r.json()
+		
 
 # =============================================================================
 # Search Datasets
@@ -101,7 +132,7 @@ EXAMPLE:
 
 		return r.json()
 
-"""
+	"""
 GET
 
 URL:
@@ -117,18 +148,37 @@ EXAMPLE:
 
 % curl -k -b cookies.txt -X GET "https://portal-auth.nersc.gov/als/hdf/dataset?dataset=20130713_185717_Chilarchaea_quellon_F_9053427_IKI_"
 
-"""
+	"""
+# =============================================================================
+# Takes dataset name and formats for use in API calls
+# 
 
+	def deconstruct_DatasetPath(dataset,username=None)
+
+		dataset = dataset.strip(".h5") # determine if dataset contains username and split
+		if "/" in dataset: 
+			datasplit = dataset.split("/")
+			username = datasplit[-2]
+			fileName = datasplit[-1]
+
+		if username==None:
+			username = self.spot_username
+
+		return fileName,username
+		
 
 # =============================================================================
 # View Attributes for Single Dataset and Image Within Dataset
 
-	def spot_attributes(self.dataset):
+	def attributes(self,dataset,username=None):
 
-		self.URL_attributes = "https://portal-auth.nersc.gov/als/hdf/attributes/"
+		self.URL_attributes = "https://portal-auth.nersc.gov/als/hdf/attributes/als/bl832/"
 
-		r = session.get(self.URL_attributes + dataset,{"group":"/"})
+		dataset,username = deconstruct_DatasetPath(dataset,username=username)
 
+		URLstring = self.URL_attributes+username+"/"+dataset+"/raw/"+dataset+".h5"
+
+		r = self.session.get(url=URLstring,params={"group":"/"})
 		return r.json()
 
 	"""
@@ -152,8 +202,17 @@ EXAMPLE:
 
 # =============================================================================
 # List Images Within Dataset
+# *** NOT TESTED ***
 
-"""
+	def list_images(self,dataset):
+		dataset =dataset.strip(".h5")
+		self.URL_listImages = "https://portal-auth.nersc.gov/als/hdf/listimages/als/bl832/"
+		URL
+		r = self.session.get(self.URL_listImages+dataset)
+
+		return r.json()
+
+	"""
  GET
 
 URL:
@@ -169,12 +228,20 @@ EXAMPLE:
 
 % curl -k -b cookies.txt -X GET "https://portal-auth.nersc.gov/als/hdf/listimages/als/bl832/hmwood/20130713_185717_Chilarchaea_quellon_F_9053427_IKI_/raw/20130713_185717_Chilarchaea_quellon_F_9053427_IKI_.h5"
 
-"""
+	"""
 
 # =============================================================================
 # Stage Dataset From Tape to Disk if Required
+# *** NOT TESTED ***
 
-"""
+	def stage(self,dataset,username=None):
+		fileName,username = self.
+		self.URL_stage = "https://portal-auth.nersc.gov/als/hdf/stageifneeded/"
+		URL_string = self.URL_stage + dataset
+		r = self.session.get(url=URL_string,params={})
+		return r
+
+	"""
  GET
 
 URL:
@@ -190,12 +257,25 @@ EXAMPLE:
 
 % curl -k -b cookies.txt -X GET "https://portal-auth.nersc.gov/als/hdf/stageifneeded/als/bl832/hmwood/20130713_185717_Chilarchaea_quellon_F_9053427_IKI_/raw/20130713_185717_Chilarchaea_quellon_F_9053427_IKI_.h5"
 
-"""
+	"""
 
 # =============================================================================
 # Download Dataset
+# *** NOT TESTED ***
 
-"""
+	def download(self,dataset,username=None):
+		filename,username = self.deconstruct_DatasetPath(dataset,username=username)
+		
+		self.URL_download = "https://portal-auth.nersc.gov/als/hdf/download/als/bl832/"
+		
+		URL_string = URL_download+username+"/"+filename+"/raw/"+filename+".h5"
+
+		r = self.session.get(URL_string)
+		
+		return r.json()
+
+
+	"""
  GET
 
 URL:
@@ -211,14 +291,31 @@ EXAMPLE:
 
 % curl -k -b cookies.txt -X GET "https://portal-auth.nersc.gov/als/hdf/download/als/bl832/hmwood/20130713_185717_Chilarchaea_quellon_F_9053427_IKI_/raw/20130713_185717_Chilarchaea_quellon_F_9053427_IKI_.h" > file.h5
 
-"""
+	"""
 
 
 
 # =============================================================================
 # Download Rawdata For Individual Image
+# *** NOT TESTED ***
 
-"""
+
+	def download_image(self,dataset,username=None,number=0,):
+
+		if (type(number)==int or type(number)=float):
+			numstring = "_"+str(int(number)).zfill(4)
+
+		filename,username = self.deconstruct_DatasetPath(dataset,username=username)
+		
+		self.URL_download = "https://portal-auth.nersc.gov/als/hdf/download/als/bl832/"
+		
+		URL_string = URL_download+username+"/"+filename+"-"+filename+".h5" #NOT SURE WHAT TO DO HERE
+
+		r = self.session.get(URL_string)
+		
+		return r.json()
+
+	"""
  GET
 
 URL:
@@ -234,13 +331,14 @@ EXAMPLE:
 
 % curl -k -b cookies.txt -X GET "https://portal-auth.nersc.gov/als/hdf/rawdata/als/bl832/hmwood/20130713_185717_Chilarchaea_quellon_F_9053427_IKI_/norm/20130713_185717_Chilarchaea_quellon_F_9053427_IKI_-norm-20130714_192637.h5?group=/20130713_185717_Chilarchaea_quellon_F_9053427_IKI_/20130713_185717_Chilarchaea_quellon_F_9053427_IKI__0000_0640.tif"
 
-"""
+	"""
 
 
 # =============================================================================
 # Get Download URLs for .tif and .png files for individual image
+# *** NOT TESTED ***
 
-"""
+	"""
  GET
 
 URL:
@@ -256,14 +354,14 @@ EXAMPLE:
 
 % curl -k -b cookies.txt -X GET "https://portal-auth.nersc.gov/als/hdf/image/als/bl832/hmwood/20130713_185717_Chilarchaea_quellon_F_9053427_IKI_/norm/20130713_185717_Chilarchaea_quellon_F_9053427_IKI_-norm-20130714_192637.h5?group=/20130713_185717_Chilarchaea_quellon_F_9053427_IKI_/20130713_185717_Chilarchaea_quellon_F_9053427_IKI__0000_0640.tif"
 
-"""
+	"""
 
 
 
 # =============================================================================
 # Run TomoPy on an existing dataset
 
-"""
+	"""
  GET
 
 URL:
@@ -279,7 +377,7 @@ EXAMPLE:
 
 % curl -k -b cookies.txt -X GET "https://portal-auth.nersc.gov/als/hdf/tomopyjob?dataset=20130713_185717_Chilarchaea_quellon_F_9053427_IKI_"
 
-"""
+	"""
 
 
 
