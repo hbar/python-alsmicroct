@@ -21,24 +21,26 @@ import requests # tools for web requests/communication with online APIs
 # Create spot session class
 # This class includes all functions for authenticating and communcating with SPOT API
 
-class spotSession():
+class SpotSession():
 
 # =============================================================================
 # Login
-	def __init__ (self,username=None):
+# tested, works properly
+
+	def __init__ (self,username='default'):
 		"""
 		Prompts user for username and password
 		"""
 		self.URL_authentication = "https://portal-auth.nersc.gov/als/auth"
 		self.username = username
-		spot_username = raw_input("username:")
+		self.spot_username = raw_input("username:")
 		spot_password = getpass.getpass()
 
-		if username == None:
-			self.spot_username=spot_username # Stores username to be used in filepaths
+		if username == 'default': # if no additional usermane is given, spot username is stored to be used in file paths
+			self.spot_username=spot_username 
 
 		s = requests.Session()
-		r = s.post(self.URL_authentication,{"username":spot_username,"password":spot_password})
+		r = s.post(self.URL_authentication,{"username":self.spot_username,"password":spot_password})
 		self.session = s
 	"""
 POST
@@ -54,6 +56,7 @@ EXAMPLE:
 
 # =============================================================================
 # Check Authentication
+# 	tested, works properly
 
 	def check_authentication(self):
 		r = self.session.get(self.URL_authentication)
@@ -83,9 +86,9 @@ EXAMPLE:
 
 # =============================================================================
 # Search Datasets
-
+# 	tested, works properly, returns list of json oblejcts
 	def search(self,
-		search,
+		query,
 		session=None,
 		limitnum = 10, # number of results to show
 		skipnum = 0, # number of results to skip
@@ -95,7 +98,7 @@ EXAMPLE:
 		self.URL_search = "https://portal-auth.nersc.gov/als/hdf/search"
 		self.PARAMS_search = {"limitnum": limitnum, "skipnum":skipnum, "sortterm": sortterm, "sorttype": sorttype, "search": search}
 		r = self.session.get(url=self.URL_search,params=self.PARAMS_search)
-		return r.json()
+		return r.json() # returns list of JSON objects containing search results
 
 
 	"""
@@ -122,6 +125,7 @@ EXAMPLE:
 
 # =============================================================================
 # Find Derived Datasets (norm, sino, gridrec, imgrec) from raw dataset
+# 	Tested, works, returns list of json objects
 
 	def derived_datasets(self,dataset):
 		
@@ -151,20 +155,26 @@ EXAMPLE:
 	"""
 # =============================================================================
 # Takes dataset name and formats for use in API calls
-# 
+# 	tested, used in class methods that require [dataset] entry in URL
 
-	def deconstruct_DatasetPath(dataset,username=None)
+	def formatPath(self,dataset,username='default'):
 
-		dataset = dataset.strip(".h5") # determine if dataset contains username and split
-		if "/" in dataset: 
+		dataset = dataset.strip(".h5") 
+
+		if (username=='default' or username==None):
+			username = self.spot_username
+			filename = dataset
+
+		elif "/" in dataset: # determine if dataset contains username and splits
+			# 'username/filename' becomes two separate strings: username and filename 
 			datasplit = dataset.split("/")
 			username = datasplit[-2]
-			fileName = datasplit[-1]
+			filename = datasplit[-1]
 
-		if username==None:
-			username = self.spot_username
+		else:
+			filename=dataset
 
-		return fileName,username
+		return filename,username
 		
 
 # =============================================================================
@@ -174,7 +184,7 @@ EXAMPLE:
 
 		self.URL_attributes = "https://portal-auth.nersc.gov/als/hdf/attributes/als/bl832/"
 
-		dataset,username = deconstruct_DatasetPath(dataset,username=username)
+		dataset,username = self.formatPath(dataset,username=username)
 
 		URLstring = self.URL_attributes+username+"/"+dataset+"/raw/"+dataset+".h5"
 
@@ -232,13 +242,13 @@ EXAMPLE:
 
 # =============================================================================
 # Stage Dataset From Tape to Disk if Required
-# *** NOT TESTED ***
-
-	def stage(self,dataset,username=None):
-		fileName,username = self.
-		self.URL_stage = "https://portal-auth.nersc.gov/als/hdf/stageifneeded/"
-		URL_string = self.URL_stage + dataset
-		r = self.session.get(url=URL_string,params={})
+# 	Tested, works properly
+# 	... Not sure how to figure figure out when staging is complete.
+	def stage(self,dataset,username='default'):
+		fileName,username = self.formatPath(dataset,username)
+		self.URL_stage = "https://portal-auth.nersc.gov/als/hdf/stageifneeded/als/bl832/"
+		URL_string = self.URL_stage+username+"/"+fileName+"/raw/"+fileName+".h5"
+		r = self.session.get(url=URL_string)
 		return r
 
 	"""
@@ -261,19 +271,35 @@ EXAMPLE:
 
 # =============================================================================
 # Download Dataset
-# *** NOT TESTED ***
+# 	tested, downloads large file, haven't opened file to see if it worked
 
-	def download(self,dataset,username=None):
-		filename,username = self.deconstruct_DatasetPath(dataset,username=username)
-		
+	def download(self,dataset,username='default',downloadPath='default',downloadName='default'):
+
+		filename,username = self.formatPath(dataset,username=username)# process input path
+		downloadName = downloadName.strip('.h5') # remove .h5 from output file name
+
 		self.URL_download = "https://portal-auth.nersc.gov/als/hdf/download/als/bl832/"
 		
-		URL_string = URL_download+username+"/"+filename+"/raw/"+filename+".h5"
+		if downloadPath=='default':
+			downloadPath = "./"
 
+		if downloadName=='default':
+			downloadName = filename
+
+		if downloadPath[-1] != "/": # add "/" to output path if it is not included
+			downloadPath = downloadPath+"/"
+
+		URL_string = self.URL_download+username+"/"+filename+"/raw/"+filename+".h5"
+		# print(URL_string)
 		r = self.session.get(URL_string)
-		
-		return r.json()
 
+		fileLocation = downloadPath+downloadName+".h5" 
+
+		with open(fileLocation, "wb") as location:
+			location.write(r.content)
+
+		print 'download complete: ' + fileLocation
+		return fileLocation
 
 	"""
  GET
@@ -300,9 +326,9 @@ EXAMPLE:
 # *** NOT TESTED ***
 
 
-	def download_image(self,dataset,username=None,number=0,):
+	def download_image(self,dataset,username=None,number=0):
 
-		if (type(number)==int or type(number)=float):
+		if (type(number)==int or type(number)==float):
 			numstring = "_"+str(int(number)).zfill(4)
 
 		filename,username = self.deconstruct_DatasetPath(dataset,username=username)

@@ -7,5 +7,6 @@
 *.md~
 *.pyc
 *~
+*.h5
 .metadata
 cookies.txt
