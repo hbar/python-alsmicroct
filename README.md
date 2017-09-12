@@ -96,11 +96,11 @@ from TomographyTools.reconstruction import recon
 recon([dataset],cor=[Center of Rotation])
 ```
 
-Arguments passed in to `recon` function are listed below"
+Arguments passed in to `recon` function are listed below:
 
 
 ```
-def recon(
+recon(
 	filename,
 	inputPath = './',
 	outputPath = None,
@@ -148,8 +148,7 @@ def recon(
 	nmRatio = 1.0,              # ratio of radius of circular mask to edge of reconstructed image (nm)
 	nmSinoOrder = False,        # if True, analyzes in sinogram space. If False, analyzes in radiograph space
 	use360to180 = False,        # use 360 to 180 conversion
-	doBilateralFilter = False,  # if True, uses bilateral filter on image just before write step
-							        # NOTE: image will be converted to 8bit if it is not already
+	doBilateralFilter = False,  # if True, bilateral filter applied to image just before write step # NOTE: image will be converted to 8bit if it is not already
 	bilateral_srad = 3,         # spatial radius for bilateral filter (image will be converted to 8bit if not already)
 	bilateral_rrad = 30,        # range radius for bilateral filter (image will be converted to 8bit if not already)
 	castTo8bit = False,         # convert data to 8bit before writing
