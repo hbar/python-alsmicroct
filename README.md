@@ -31,18 +31,17 @@ Tomography analysis requires proessing of large (many GB) datasets that contain 
 [NERSC]: http://www.nersc.gov/
 
 
+## SPOT Suite API Commands
 
-### SPOT Suite API Commands
-
-SPOT Suite is an online platform for storage and datamanagement of ALS data on NERSC. In this library commands commands and data requests can be sent to the SPOT API using functions contained in a class called `spotSession`. This class utilizes python's `requests` library to communicate with the API. This class is available in `TomographyTools.data_management` toolkit.
+SPOT Suite is an online platform for storage and datamanagement of ALS data on NERSC. In this library commands commands and data requests can be sent to the SPOT API using functions contained in a class called `SpotSession`. This class utilizes python's `requests` library to communicate with the API. This class is available in `TomographyTools.data_management` toolkit.
 
 #### `SpotSession(username='default')`
 
-Creating an instance of the `SpotSession()` class establishes a session with the SPOT API. The user will be prompted for username and password
+Creating an instance of the `SpotSession()` class establishes a session with the SPOT API. The user will be prompted for username and password.
 
-`username` will default to your spot username, however, you can enter a different username if you are not the owner of the dataset you will request. You will permission to access data for which are not the owner.
+`username` will default to your spot username, however, you can enter a different username if you are not the owner of the dataset that you will request. You will permission to access data for which are not the owner.
 
-```
+```python
 import sys
 sys.path.append("[local path]/python-TomographyTools")
 import TomographyTools.data_management as dm
@@ -54,48 +53,48 @@ r = s.search("my_search_term") # returns list with one JSON object for each sear
 
 ##### `SpotSession()` built in functions:
 
-*Check authentication:*
-
+**Check authentication:** 
 `check_authentication()` returns True if authentication is active
 
-*Authenticate if connection is lost:*
-
+**Authenticate if connection is lost:**
 `authentication()` prompts user for username and password for current session and reconnects.
 
-*Searches for filenames containing `query` string*
-
-```
-search(query,                        # input search string
+**Search:** find filenames containing `query` string.
+```python
+search(query,                    # input search string
 	limitnum = 10,               # number of results to show
 	skipnum = 0,                 # number of results to skip
 	sortterm = "fs.stage_date",  # database field on which to sort
 	sorttype = "desc")           # sorttype: desc or asc
 ```
 
+**Derived Datasets:** 
 `derived_datasets(self,dataset)` Finds derived datasets (norm, sino, gridrec, imgrec) from raw dataset. Returns `json` type object
 
-*Request metadata:*
-
+**Request metadata:**
 `attributes(self,dataset,username='default)` Requests metadata for dataset.
 
-*Stage dataset from tape storage:*
+**Stage dataset from tape storage:**
+`stage(self,dataset,username='default')` Stage dataset from tape to disk if required (data is stored long term on tape drives and must be transferred to disk for use).   
 
-`stage(self,dataset,username='default')` Stage dataset from tape to disk if required (data is stored long term on tape drives and must be transferred to disk for use). 
 
-*Download raw dataset from SPOT:*
+**Download raw dataset from SPOT:**
 
-```
-download(dataset,			# Name of dataset
-	username='default',		# username of dataset owner, defaults to spot login username
+```python
+download(dataset,			    # Name of dataset
+	username='default',		    # username of dataset owner, defaults to spot login username
 	downloadPath='default',		# download destination, defaults to pwd
 	downloadName='default')		# download name filename, defaults to name of dataset
 ```
 
-### Reconstruction
+
+  
+  
+## Reconstruction
 
 The reconstruction module serves a wrapper to interface with the the tomopy libraries. The primary function in the module is `recon()` with provides access to a wide range of tomopy's functionality through arguemnts passed into `recon([arguments])`. The `recon()` function is commonly used as follows:
 
-```
+```python
 import sys
 sys.path.append("[local path]/python-TomographyTools")
 from TomographyTools.reconstruction import recon
@@ -106,7 +105,7 @@ recon([dataset],cor=[Center of Rotation])
 Arguments passed in to `recon` function are listed below:
 
 
-```
+```python
 recon(
 	filename,
 	inputPath = './',
@@ -177,5 +176,3 @@ recon(
 	projIgnoreList = None,      #projections to be ignored in the reconstruction (for simplicity in the code, they will not be removed and will be processed as all other projections but will be set to zero absorption right before reconstruction.
 	):
 ```
-
-
