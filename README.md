@@ -82,3 +82,94 @@ download(dataset,			# Name of dataset
 	downloadName='default')		# download name filename, defaults to name of dataset
 ```
 Downloads raw dataset from SPOT
+
+
+### Reconstruction
+
+The reconstruction module serves a wrapper to interface with the the tomopy libraries. The primary function in the module is `recon()` with provides access to a wide range of tomopy's functionality through arguemnts passed into `recon(...)`. The `recon()` function is commonly used as follows:
+
+```
+import sys
+sys.path.append("[local path]/python-TomographyTools")
+from TomographyTools.reconstruction import recon
+
+recon([dataset],cor=[Center of Rotation])
+```
+
+Arguments passed in to `recon` function are listed below"
+
+
+```
+def recon(
+	filename,
+	inputPath = './',
+	outputPath = None,
+	outputFilename = None,
+	doOutliers1D = False,       # outlier removal in 1d (along sinogram columns)
+	outlier_diff1D = 750,       # difference between good data and outlier data (outlier removal)
+	outlier_size1D = 3,         # radius around each pixel to look for outliers (outlier removal)
+	doOutliers2D = False,       # outlier removal, standard 2d on each projection
+	outlier_diff2D = 750,       # difference between good data and outlier data (outlier removal)
+	outlier_size2D = 3,         # radius around each pixel to look for outliers (outlier removal)
+	doFWringremoval = True,     # Fourier-wavelet ring removal
+	doTIringremoval = False,    # Titarenko ring removal
+	doSFringremoval = False,    # Smoothing filter ring removal
+	ringSigma = 3,              # damping parameter in Fourier space (Fourier-wavelet ring removal)
+	ringLevel = 8,              # number of wavelet transform levels (Fourier-wavelet ring removal)
+	ringWavelet = 'db5',        # type of wavelet filter (Fourier-wavelet ring removal)
+	ringNBlock = 0,             # used in Titarenko ring removal (doTIringremoval)
+	ringAlpha = 1.5,            # used in Titarenko ring removal (doTIringremoval)
+	ringSize = 5,               # used in smoothing filter ring removal (doSFringremoval)
+	doPhaseRetrieval = False,   # phase retrieval
+	alphaReg = 0.0002,		    # smaller = smoother (used for phase retrieval)
+	propagation_dist = 75,      # sample-to-scintillator distance (phase retrieval)
+	kev = 24,                   # energy level (phase retrieval)
+	butterworth_cutoff = 0.25, 	# 0.1 would be very smooth, 0.4 would be very grainy (reconstruction)
+	butterworth_order = 2, 		# for reconstruction
+	doPolarRing = False,        # ring removal
+	Rarc = 30,                  # min angle needed to be considered ring artifact (ring removal)
+	Rmaxwidth = 100,            # max width of rings to be filtered (ring removal)
+	Rtmax = 3000.0,             # max portion of image to filter (ring removal)
+	Rthr = 3000.0,              # max value of offset due to ring artifact (ring removal)
+	Rtmin = -3000.0,            # min value of image to filter (ring removal)
+	cor = None,                 # center of rotation (float). If not used then cor will be detected automatically
+	corFunction = 'pc',         # center of rotation function to use - can be 'pc', 'vo', or 'nm'
+	voInd = None,               # index of slice to use for cor search (vo)
+	voSMin = -40,               # min radius for searching in sinogram (vo)
+	voSMax = 40,                # max radius for searching in sinogram (vo)
+	voSRad = 10,                # search radius (vo)
+	voStep = 0.5,               # search step (vo)
+	voRatio = 2.0,              # ratio of field-of-view and object size (vo)
+	voDrop = 20,                # drop lines around vertical center of mask (vo)
+	nmInd = None,               # index of slice to use for cor search (nm)
+	nmInit = None,              # initial guess for center (nm)
+	nmTol = 0.5,                # desired sub-pixel accuracy (nm)
+	nmMask = True,              # if True, limits analysis to circular region (nm)
+	nmRatio = 1.0,              # ratio of radius of circular mask to edge of reconstructed image (nm)
+	nmSinoOrder = False,        # if True, analyzes in sinogram space. If False, analyzes in radiograph space
+	use360to180 = False,        # use 360 to 180 conversion
+	doBilateralFilter = False,  # if True, uses bilateral filter on image just before write step
+							        # NOTE: image will be converted to 8bit if it is not already
+	bilateral_srad = 3,         # spatial radius for bilateral filter (image will be converted to 8bit if not already)
+	bilateral_rrad = 30,        # range radius for bilateral filter (image will be converted to 8bit if not already)
+	castTo8bit = False,         # convert data to 8bit before writing
+	cast8bit_min=-10,           # min value if converting to 8bit
+	cast8bit_max=30,            # max value if converting to 8bit
+	useNormalize_nf = False,    # normalize based on background intensity (nf)
+	chunk_proj = 100,           # chunk size in projection direction
+	chunk_sino = 100,           # chunk size in sinogram direction
+	npad = None,                # amount to pad data before reconstruction
+	projused = None,            #should be slicing in projection dimension (start,end,step)
+	sinoused = None,            #should be sliceing in sinogram dimension (start,end,step). If first value is negative, it takes the number of slices from the second value in the middle of the stack.
+	correcttilt = 0,            #tilt dataset
+	tiltcenter_slice = None,    # tilt center (x direction)
+	tiltcenter_det = None,      # tilt center (y direction)
+	angle_offset = 0,           #this is the angle offset from our default (270) so that tomopy yields output in the same orientation as previous software (Octopus)
+	anglelist = None,           #if not set, will assume evenly spaced angles which will be calculated by the angular range and number of angles found in the file. if set to -1, will read individual angles from each image. alternatively, a list of angles can be passed.
+	doBeamHardening = False,     #turn on beam hardening correction, based on "Correction for beam hardening in computed tomography", Gabor Herman, 1979 Phys. Med. Biol. 24 81
+	BeamHardeningCoefficients = None, #6 values, tomo = a0 + a1*tomo + a2*tomo^2 + a3*tomo^3 + a4*tomo^4 + a5*tomo^5
+	projIgnoreList = None,      #projections to be ignored in the reconstruction (for simplicity in the code, they will not be removed and will be processed as all other projections but will be set to zero absorption right before reconstruction.
+	):
+```
+
+
