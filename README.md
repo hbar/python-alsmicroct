@@ -27,7 +27,7 @@ Tomography analysis requires proessing of large (many GB) datasets that contain 
 
 `batch/` contains .slurm scripts that are used to submit jobs to the [NERSC] supercomputer.
 
-`tests\` contains test cases for functions in TomographyTools.
+`tests/` contains test cases for functions in TomographyTools.
 
 [NERSC]: http://www.nersc.gov/
 
