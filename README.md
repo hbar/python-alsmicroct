@@ -48,6 +48,8 @@ sys.path.append("[local path]/python-TomographyTools")
 import TomographyTools.data_management as dm
 
 s = dm.SpotSession()
+
+r = s.search("my_search_term") # returns list with one JSON object for each search result
 ```
 
 ##### `SpotSession()` built in functions:
@@ -86,7 +88,7 @@ Downloads raw dataset from SPOT
 
 ### Reconstruction
 
-The reconstruction module serves a wrapper to interface with the the tomopy libraries. The primary function in the module is `recon()` with provides access to a wide range of tomopy's functionality through arguemnts passed into `recon(...)`. The `recon()` function is commonly used as follows:
+The reconstruction module serves a wrapper to interface with the the tomopy libraries. The primary function in the module is `recon()` with provides access to a wide range of tomopy's functionality through arguemnts passed into `recon([arguments])`. The `recon()` function is commonly used as follows:
 
 ```
 import sys
