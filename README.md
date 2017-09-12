@@ -19,14 +19,15 @@ Tomography analysis requires proessing of large (many GB) datasets that contain 
 
 ## Repo File Structure
 
-`lib/` contains functions and classes used for data analysis
+`TomographyTools/` contains functions and classes used for managing data pipeline and data analysis
 
-
-`applications/` contains programs that utilize functions from lib and TomoPy.
+`applications/` contains programs that utilize functions from TomographyTools and tomopy.
 
 `filepath/` contains input files that provide lists of paths the datasets that are to be reconstructed or processed.
 
 `batch/` contains .slurm scripts that are used to submit jobs to the [NERSC] supercomputer.
+
+`tests\` contains test cases for functions in TomographyTools.
 
 [NERSC]: http://www.nersc.gov/
 
