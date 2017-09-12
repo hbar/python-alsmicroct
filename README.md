@@ -60,10 +60,10 @@ s = dm.SpotSession()
 ```
 search(query, 
 	session = None,              # number of results to show
-    limitnum = 10,               # number of results to skip
-    skipnum = 0,                 # number of results to skip
-    sortterm = "fs.stage_date",  # database field on which to sort
-    sorttype = "desc")           # sorttype: desc or asc
+	limitnum = 10,               # number of results to skip
+	skipnum = 0,                 # number of results to skip
+	sortterm = "fs.stage_date",  # database field on which to sort
+	sorttype = "desc")           # sorttype: desc or asc
 ```
 Searches for filenames containing `query` string
 
@@ -79,7 +79,7 @@ Searches for filenames containing `query` string
 ```
 download(dataset,			# Name of dataset
 	username='default',		# username of dataset owner, defaults to spot login username
-   	downloadPath='default',	# download destination, defaults to pwd
-    downloadName='default')	# download name filename, defaults to name of dataset
+	downloadPath='default',		# download destination, defaults to pwd
+	downloadName='default')		# download name filename, defaults to name of dataset
 ```
 Downloads raw dataset from SPOT
