@@ -58,9 +58,8 @@ s = dm.SpotSession()
 `authentication()` prompts user for username and password for current session and reconnects.
 
 ```
-search(query, 
-	session = None,              # number of results to show
-	limitnum = 10,               # number of results to skip
+search(query,                        # input search string
+	limitnum = 10,               # number of results to show
 	skipnum = 0,                 # number of results to skip
 	sortterm = "fs.stage_date",  # database field on which to sort
 	sorttype = "desc")           # sorttype: desc or asc

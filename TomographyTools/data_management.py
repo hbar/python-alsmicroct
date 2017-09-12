@@ -89,7 +89,6 @@ EXAMPLE:
 # 	tested, works properly, returns list of json oblejcts
 	def search(self,
 		query,
-		session=None,
 		limitnum = 10, # number of results to show
 		skipnum = 0, # number of results to skip
 		sortterm = "fs.stage_date", # database field on which to sort (commonly fs.stage_date or appmetadata.sdate)
