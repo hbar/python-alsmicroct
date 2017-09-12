@@ -361,7 +361,8 @@ EXAMPLE:
 
 # =============================================================================
 # Get Download URLs for .tif and .png files for individual image
-# *** NOT TESTED ***
+# 	*** Not written ***
+#	*** NOT TESTED ***
 
 	"""
  GET
@@ -385,6 +386,8 @@ EXAMPLE:
 
 # =============================================================================
 # Run TomoPy on an existing dataset
+# 	*** Not written ***
+#	*** NOT TESTED ***
 
 	"""
  GET
@@ -410,7 +413,7 @@ EXAMPLE:
 #
 
 """
-Older functions below
+Functions for NERSC
 """
 
 # =============================================================================
@@ -439,10 +442,10 @@ def list_h5_files(searchDir):
 	"""
 	Finds all .h5 files in the search directory
 	"""
-	if searchDir[-1] == '/': 
-		h5_list = glob.glob(searchDir+"*.h5")
-	else:
-		h5_list = glob.glob(searchDir+"/*.h5")
+	if searchDir[-1] != '/': 
+		searchDir = searchDir+"/"
+
+	h5_list = glob.glob(searchDir+"*.h5")
 	return(h5_list)
 
 # =============================================================================
