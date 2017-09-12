@@ -54,10 +54,15 @@ r = s.search("my_search_term") # returns list with one JSON object for each sear
 
 ##### `SpotSession()` built in functions:
 
+*Check authentication:*
 
 `check_authentication()` returns True if authentication is active
 
+*Authenticate if connection is lost:*
+
 `authentication()` prompts user for username and password for current session and reconnects.
+
+*Searches for filenames containing `query` string*
 
 ```
 search(query,                        # input search string
@@ -66,16 +71,18 @@ search(query,                        # input search string
 	sortterm = "fs.stage_date",  # database field on which to sort
 	sorttype = "desc")           # sorttype: desc or asc
 ```
-Searches for filenames containing `query` string
-
 
 `derived_datasets(self,dataset)` Finds derived datasets (norm, sino, gridrec, imgrec) from raw dataset. Returns `json` type object
 
-
+*Request metadata:*
 
 `attributes(self,dataset,username='default)` Requests metadata for dataset.
 
+*Stage dataset from tape storage:*
+
 `stage(self,dataset,username='default')` Stage dataset from tape to disk if required (data is stored long term on tape drives and must be transferred to disk for use). 
+
+*Download raw dataset from SPOT:*
 
 ```
 download(dataset,			# Name of dataset
@@ -83,8 +90,6 @@ download(dataset,			# Name of dataset
 	downloadPath='default',		# download destination, defaults to pwd
 	downloadName='default')		# download name filename, defaults to name of dataset
 ```
-Downloads raw dataset from SPOT
-
 
 ### Reconstruction
 
