@@ -471,30 +471,44 @@ def NERSC_ArchivePath(filename,useraccount=userDefault,archivepath=NERSC_Default
 
 # =============================================================================
 
-def NERSC_StageData(filename,useraccount=userDefault):
+def NERSC_StageData(filename,username='default'):
 	'''
 	curl command sent to spot.nersc to stage data if stored on tape
 	requires credentials. Run the following command
 	> curl -k -c cookies.txt -X POST -d "username=[your_username]&password=[your_password]" https://portal-auth.nersc.gov/als/auth
 	for more info: http://spot.nersc.gov/api.php
 	'''
+	#Prompts user for username and password
+
+	URL_authentication = "https://portal-auth.nersc.gov/als/auth"
+	spot_username = raw_input("username:")
+	spot_password = getpass.getpass()
+
+	if username == 'default': # if no additional usermane is given, spot username is stored to be used in file paths
+		username=spot_username 
+
+	s = requests.Session()
+	r = s.post(URL_authentication,{"username":spot_username,"password":spot_password})
+
 	# Convert filename to list type if only one file name is given
 	if type(filename) != list:
-		filename=[filename]	
-	#EXAMPLE Command: curl -k -b cookies.txt -X GET "https://portal-auth.nersc.gov/als/hdf/stageifneeded/als/bl832/phosemann/20160512_092220_tensile7_T700_240mic/raw/20160512_092220_tensile7_T700_240mic.h5"
+		filename=[filename]
+
 	baseURL = "https://portal-auth.nersc.gov/als/hdf/stageifneeded/als/bl832/"
-	curlCommand = "curl -k -b cookies.txt -X GET "
+
+	r_list=[]
 	for i in range(len(filename)):
-		command_string = curlCommand + baseURL + useraccount +"/"+ filename[i]+"/raw/"+filename[i]+".h5"
-		os.system(command_string)
+		r = s.get(baseURL + useraccount +"/"+ filename[i]+"/raw/"+filename[i]+".h5")
 		print(command_string)
-		time.sleep(1)
+		r_list.append(r.json())
+
+	return r_list # return json
 
 # =============================================================================
 
 def NERSC_RetreiveData(filename,
+	username,
 	destinationpath,
-	useraccount=userDefault,
 	archivepath=NERSC_DefaultPath):
 
 	'''
