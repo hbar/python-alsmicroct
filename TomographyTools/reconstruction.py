@@ -13,6 +13,9 @@ import concurrent.futures as cf
 from tomopy.util import mproc
 import warnings
 import importlib
+import xlrd # for importing excel spreadsheets
+from ast import literal_eval # For converting string to tuple
+
 
 try:
 	importlib.import_module('pyF3D')
@@ -122,8 +125,7 @@ def recon(
 	nmRatio = 1.0, # ratio of radius of circular mask to edge of reconstructed image (nm)
 	nmSinoOrder = False, # if True, analyzes in sinogram space. If False, analyzes in radiograph space
 	use360to180 = False, # use 360 to 180 conversion
-	doBilateralFilter = False, # if True, uses bilateral filter on image just before write step
-							   # NOTE: image will be converted to 8bit if it is not already
+	doBilateralFilter = False, # if True, uses bilateral filter on image just before write step # NOTE: image will be converted to 8bit if it is not already
 	bilateral_srad = 3, # spatial radius for bilateral filter (image will be converted to 8bit if not already)
 	bilateral_rrad = 30, # range radius for bilateral filter (image will be converted to 8bit if not already)
 	castTo8bit = False, # convert data to 8bit before writing
@@ -143,9 +145,8 @@ def recon(
 	doBeamHardening = False, #turn on beam hardening correction, based on "Correction for beam hardening in computed tomography", Gabor Herman, 1979 Phys. Med. Biol. 24 81
 	BeamHardeningCoefficients = None, #6 values, tomo = a0 + a1*tomo + a2*tomo^2 + a3*tomo^3 + a4*tomo^4 + a5*tomo^5
 	projIgnoreList = None, #projections to be ignored in the reconstruction (for simplicity in the code, they will not be removed and will be processed as all other projections but will be set to zero absorption right before reconstruction.
-	):
+	*args, **kwargs):
 	
-
 	start_time = time.time()
 	print("Start {} at:".format(filename)+time.strftime("%a, %d %b %Y %H:%M:%S +0000", time.localtime()))
 	
@@ -564,30 +565,74 @@ def convertthetype(val):
             return c(val)
         except ValueError:
             pass
-		
+
+#Converts spreadsheet.xlsx file with headers into dictionaries
+def spreadsheet(filepath):
+	workbook=xlrd.open_workbook(filepath)
+	worksheet = workbook.sheet_by_index(0)
+
+	# imports first row and converts to a list of header strings
+	headerList = []
+	for col_index in range(worksheet.ncols):
+	    headerList.append(worksheet.cell_value(0,col_index))
+
+	dataList = []
+	# For each row, create a dictionary and like header name to data 
+	# converts each row to following format rowDictionary1 ={'header1':colvalue1,'header2':colvalue2,... }
+	# compiles rowDictinaries into a list: dataList = [rowDictionary1, rowDictionary2,...]
+	for row_index in range(1,worksheet.nrows):
+	    rowDictionary = {}
+	    for col_index in range(worksheet.ncols):
+	        cellValue = worksheet.cell_value(row_index,col_index)
+	        
+	        # if cell contains string that looks like a tuple, convert to tuple
+	        if '(' in str(cellValue):
+	            cellValue = literal_eval(cellValue)
+
+	        # if cell contains string or int that looks like 'True', convert to boolean True
+	        if str(cellValue).lower() =='true' or (type(cellValue)==int and cellValue==1):
+	            cellValue = True
+
+	        # if cell contains string or int that looks like 'False', convert to boolean False
+	        if str(cellValue).lower() =='false' or (type(cellValue)==int and cellValue==0):
+	            cellValue = False
+
+	        if cellValue != '': # create dictionary element if cell value is not empty
+	            rowDictionary[headerList[col_index]] = cellValue
+	    dataList.append(rowDictionary)
+
+		return(dataList)
+
+
 # D.Y.Parkinson's interpreter for text input files
 def main():
 	parametersfile = 'input832.txt' if (len(sys.argv)<2) else sys.argv[1]
-	with open(parametersfile,'r') as theinputfile:
-		theinput = theinputfile.read()
-		inputlist = theinput.splitlines()
-		for reconcounter in range(0,len(inputlist)):
-			inputlisttabsplit = inputlist[reconcounter].split()
-			functioninput = {'filename': inputlisttabsplit[0]}
-			for inputcounter in range(0,(len(inputlisttabsplit)-1)//2):
-				inputlisttabsplit[inputcounter*2+2] = inputlisttabsplit[inputcounter*2+2].replace('\"','')
-				inputcommasplit = inputlisttabsplit[inputcounter*2+2].split(',')
-				if len(inputcommasplit)>1:
-					inputcommasplitconverted = []
-					for jk in range(0,len(inputcommasplit)):
-						inputcommasplitconverted.append(convertthetype(inputcommasplit[jk]))
-				else:
-					inputcommasplitconverted = convertthetype(inputlisttabsplit[inputcounter*2+2])
-				functioninput[inputlisttabsplit[inputcounter*2+1]] = inputcommasplitconverted
-			print("Read user input:")
-			print(functioninput)
-			recon(**functioninput)
-			
+	if parametersfile.split('.').[-1] == 'txt':
+		with open(parametersfile,'r') as theinputfile:
+			theinput = theinputfile.read()
+			inputlist = theinput.splitlines()
+			for reconcounter in range(0,len(inputlist)):
+				inputlisttabsplit = inputlist[reconcounter].split()
+				functioninput = {'filename': inputlisttabsplit[0]}
+				for inputcounter in range(0,(len(inputlisttabsplit)-1)//2):
+					inputlisttabsplit[inputcounter*2+2] = inputlisttabsplit[inputcounter*2+2].replace('\"','')
+					inputcommasplit = inputlisttabsplit[inputcounter*2+2].split(',')
+					if len(inputcommasplit)>1:
+						inputcommasplitconverted = []
+						for jk in range(0,len(inputcommasplit)):
+							inputcommasplitconverted.append(convertthetype(inputcommasplit[jk]))
+					else:
+						inputcommasplitconverted = convertthetype(inputlisttabsplit[inputcounter*2+2])
+					functioninput[inputlisttabsplit[inputcounter*2+1]] = inputcommasplitconverted
+				print("Read user input:")
+				print(functioninput)
+				recon(**functioninput)
+
+	if parametersfile.split('.')[-1]=='xlsx':
+		functioninput = spreadsheet(parametersfile)
+		for i in range(len(functioninput)):
+			recon(**functioninput[i])
+
 if __name__ == '__main__':
     main()
 		

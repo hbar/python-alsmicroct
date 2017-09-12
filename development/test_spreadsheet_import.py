@@ -3,7 +3,7 @@ import xlrd
 from ast import literal_eval # For converting string to tuple
 
 path0 = "C:/Users/hsbarnard/Dropbox/Research(LBL)/python-TomographyTools/tests/testdata/"
-filename = "test_recon_input_spreadsheet0.xlsx"
+filename = "test_recon_input_spreadsheet1.xlsx"
 
 # opens workbook (excel document), ch0oses first sheet
 workbook=xlrd.open_workbook(path0+filename)
@@ -23,10 +23,18 @@ for row_index in range(1,worksheet.nrows):
     rowDictionary = {}
     for col_index in range(worksheet.ncols):
         cellValue = worksheet.cell_value(row_index,col_index)
+        
         # if cell contains string that looks like a tuple, convert to tuple
-        if type(cellValue)==str or type(cellValue)==unicode:
-            if '(' in cellValue:
-                cellValue = literal_eval(cellValue)
+        if '(' in str(cellValue):
+            cellValue = literal_eval(cellValue)
+
+        # if cell contains string or int that looks like 'True', convert to boolean True
+        if str(cellValue).lower() =='true' or (type(cellValue)==int and cellValue==1):
+            cellValue = True
+
+        # if cell contains string or int that looks like 'False', convert to boolean False
+        if str(cellValue).lower() =='false' or (type(cellValue)==int and cellValue==0):
+            cellValue = False
 
         if cellValue != '': # create dictionary element if cell value is not empty
             rowDictionary[headerList[col_index]] = cellValue
