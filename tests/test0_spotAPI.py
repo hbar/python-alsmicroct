@@ -1,5 +1,6 @@
 import sys
-sys.path.append("/global/u2/h/hbar/python-TomographyTools")
+#sys.path.append("/global/u2/h/hbar/python-TomographyTools")
+sys.path.append("/home/hsbarnard@als.lbl.gov/data-scratch/python/python-TomographyTools")
 
 import TomographyTools as tt
 import TomographyTools.data_management as dm

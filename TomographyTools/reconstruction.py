@@ -151,10 +151,11 @@ def recon(
 	print("Start {} at:".format(filename)+time.strftime("%a, %d %b %Y %H:%M:%S +0000", time.localtime()))
 	
 	outputPath = inputPath if outputPath is None else outputPath
-	
+
 	outputFilename = filename if outputFilename is None else outputFilename
 	tempfilenames = [outputPath+'tmp0.h5',outputPath+'tmp1.h5']
 	filenametowrite = outputPath+'/rec'+filename.strip(".h5")+'/'+outputFilename		
+	#filenametowrite = outputPath+'/rec'+filename+'/'+outputFilename		
 	
 	print("cleaning up previous temp files", end="")
 	for tmpfile in tempfilenames:
@@ -458,52 +459,52 @@ def recon(
 
 
 def convert8bit(rec,data_min,data_max):
-    rec = rec.astype(np.float32,copy=False)
-    df = np.float32(data_max-data_min)
-    mn = np.float32(data_min)
-    scl = ne.evaluate('0.5+255*(rec-mn)/df',truediv=True)
-    ne.evaluate('where(scl<0,0,scl)',out=scl)
-    ne.evaluate('where(scl>255,255,scl)',out=scl)
-    return scl.astype(np.uint8)
+	rec = rec.astype(np.float32,copy=False)
+	df = np.float32(data_max-data_min)
+	mn = np.float32(data_min)
+	scl = ne.evaluate('0.5+255*(rec-mn)/df',truediv=True)
+	ne.evaluate('where(scl<0,0,scl)',out=scl)
+	ne.evaluate('where(scl>255,255,scl)',out=scl)
+	return scl.astype(np.uint8)
 	
 
 def sino_360_to_180(data, overlap=0, rotation='left'):
-    """
-    Converts 0-360 degrees sinogram to a 0-180 sinogram.
-    
-    Parameters
-    ----------
-    data : ndarray
-        Input 3D data.
+	"""
+	Converts 0-360 degrees sinogram to a 0-180 sinogram.
+	
+	Parameters
+	----------
+	data : ndarray
+		Input 3D data.
 
-    overlap : scalar, optional
-        Overlapping number of pixels.
+	overlap : scalar, optional
+		Overlapping number of pixels.
 
-    rotation : string, optional
-        Left if rotation center is close to the left of the
-        field-of-view, right otherwise.
+	rotation : string, optional
+		Left if rotation center is close to the left of the
+		field-of-view, right otherwise.
 
-    Returns
-    -------
-    ndarray
-    Output 3D data.
-    """
-    dx, dy, dz = data.shape
-    lo = overlap//2
-    ro = overlap - lo
-    n = dx//2
-    out = np.zeros((n, dy, 2*dz-overlap), dtype=data.dtype)
-    if rotation == 'left':
-        weights = (np.arange(overlap)+0.5)/overlap
-        out[:, :, -dz+overlap:] = data[:n, :, overlap:]
-        out[:, :, :dz-overlap] = data[n:2*n, :, overlap:][:, :, ::-1]
-        out[:, :, dz-overlap:dz] = weights*data[:n, :, :overlap] + (weights*data[n:2*n, :, :overlap])[:, :, ::-1]
-    elif rotation == 'right':
-        weights = (np.arange(overlap)[::-1]+0.5)/overlap
-        out[:, :, :dz-overlap] = data[:n, :, :-overlap]
-        out[:, :, -dz+overlap:] = data[n:2*n, :, :-overlap][:, :, ::-1]
-        out[:, :, dz-overlap:dz] = weights*data[:n, :, -overlap:] + (weights*data[n:2*n, :, -overlap:])[:, :, ::-1]
-    return out
+	Returns
+	-------
+	ndarray
+	Output 3D data.
+	"""
+	dx, dy, dz = data.shape
+	lo = overlap//2
+	ro = overlap - lo
+	n = dx//2
+	out = np.zeros((n, dy, 2*dz-overlap), dtype=data.dtype)
+	if rotation == 'left':
+		weights = (np.arange(overlap)+0.5)/overlap
+		out[:, :, -dz+overlap:] = data[:n, :, overlap:]
+		out[:, :, :dz-overlap] = data[n:2*n, :, overlap:][:, :, ::-1]
+		out[:, :, dz-overlap:dz] = weights*data[:n, :, :overlap] + (weights*data[n:2*n, :, :overlap])[:, :, ::-1]
+	elif rotation == 'right':
+		weights = (np.arange(overlap)[::-1]+0.5)/overlap
+		out[:, :, :dz-overlap] = data[:n, :, :-overlap]
+		out[:, :, -dz+overlap:] = data[n:2*n, :, :-overlap][:, :, ::-1]
+		out[:, :, dz-overlap:dz] = weights*data[:n, :, -overlap:] + (weights*data[n:2*n, :, -overlap:])[:, :, ::-1]
+	return out
 
 
 
@@ -559,12 +560,12 @@ def remove_outlier1d(arr, dif, size=3, axis=0, ncore=None, out=None):
 	return out
 	
 def convertthetype(val):
-    constructors = [int, float, str]
-    for c in constructors:
-        try:
-            return c(val)
-        except ValueError:
-            pass
+	constructors = [int, float, str]
+	for c in constructors:
+		try:
+			return c(val)
+		except ValueError:
+			pass
 
 #Converts spreadsheet.xlsx file with headers into dictionaries
 def spreadsheet(filepath):
@@ -574,40 +575,44 @@ def spreadsheet(filepath):
 	# imports first row and converts to a list of header strings
 	headerList = []
 	for col_index in range(worksheet.ncols):
-	    headerList.append(worksheet.cell_value(0,col_index))
+		headerList.append(str(worksheet.cell_value(0,col_index)))
 
 	dataList = []
 	# For each row, create a dictionary and like header name to data 
 	# converts each row to following format rowDictionary1 ={'header1':colvalue1,'header2':colvalue2,... }
 	# compiles rowDictinaries into a list: dataList = [rowDictionary1, rowDictionary2,...]
 	for row_index in range(1,worksheet.nrows):
-	    rowDictionary = {}
-	    for col_index in range(worksheet.ncols):
-	        cellValue = worksheet.cell_value(row_index,col_index)
-	        
-	        # if cell contains string that looks like a tuple, convert to tuple
-	        if '(' in str(cellValue):
-	            cellValue = literal_eval(cellValue)
+		rowDictionary = {}
+		for col_index in range(worksheet.ncols):
+			cellValue = worksheet.cell_value(row_index,col_index)
 
-	        # if cell contains string or int that looks like 'True', convert to boolean True
-	        if str(cellValue).lower() =='true' or (type(cellValue)==int and cellValue==1):
-	            cellValue = True
+			if type(cellValue)==unicode:
+				cellValue = str(cellValue)
+			
+			# if cell contains string that looks like a tuple, convert to tuple
+			if '(' in str(cellValue):
+				cellValue = literal_eval(cellValue)
 
-	        # if cell contains string or int that looks like 'False', convert to boolean False
-	        if str(cellValue).lower() =='false' or (type(cellValue)==int and cellValue==0):
-	            cellValue = False
+			# if cell contains string or int that looks like 'True', convert to boolean True
+			if str(cellValue).lower() =='true' or (type(cellValue)==int and cellValue==1):
+				cellValue = True
 
-	        if cellValue != '': # create dictionary element if cell value is not empty
-	            rowDictionary[headerList[col_index]] = cellValue
-	    dataList.append(rowDictionary)
+			# if cell contains string or int that looks like 'False', convert to boolean False
+			if str(cellValue).lower() =='false' or (type(cellValue)==int and cellValue==0):
+				cellValue = False
 
-		return(dataList)
+			if cellValue != '': # create dictionary element if cell value is not empty
+				rowDictionary[headerList[col_index]] = cellValue
+		dataList.append(rowDictionary)
+
+	return(dataList)
 
 
 # D.Y.Parkinson's interpreter for text input files
 def main():
 	parametersfile = 'input832.txt' if (len(sys.argv)<2) else sys.argv[1]
-	if parametersfile.split('.').[-1] == 'txt':
+
+	if parametersfile.split('.')[-1] == 'txt':
 		with open(parametersfile,'r') as theinputfile:
 			theinput = theinputfile.read()
 			inputlist = theinput.splitlines()
@@ -628,11 +633,12 @@ def main():
 				print(functioninput)
 				recon(**functioninput)
 
+# H.S.Barnard Spreadsheet interpreter
 	if parametersfile.split('.')[-1]=='xlsx':
 		functioninput = spreadsheet(parametersfile)
 		for i in range(len(functioninput)):
 			recon(**functioninput[i])
 
 if __name__ == '__main__':
-    main()
+	main()
 		

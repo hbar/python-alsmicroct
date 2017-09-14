@@ -2,11 +2,13 @@ import numpy as np
 import xlrd
 from ast import literal_eval # For converting string to tuple
 
-path0 = "C:/Users/hsbarnard/Dropbox/Research(LBL)/python-TomographyTools/tests/testdata/"
+#path0 = "C:/Users/hsbarnard/Dropbox/Research(LBL)"
+path0 = '/mnt/bl832data-scratch/hsbarnard/python/python-TomographyTools/'
+path1 = "tests/testdata/"
 filename = "test_recon_input_spreadsheet1.xlsx"
 
 # opens workbook (excel document), ch0oses first sheet
-workbook=xlrd.open_workbook(path0+filename)
+workbook=xlrd.open_workbook(path0+path1+filename)
 worksheet =  workbook.sheet_by_index(0)
 
 # imports first row and converts to a list of header strings
