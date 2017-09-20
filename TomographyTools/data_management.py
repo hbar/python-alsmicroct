@@ -66,7 +66,7 @@ EXAMPLE:
 	def authentication(self):
 		r = s.get(self.URL_authentication)
 		if r.json()['auth'] == False:
-			print "Authentication required to start a new session"
+			print("Authentication required to start a new session")
 			spot_username = raw_input("username:")
 			spot_password = getpass.getpass()
 			s = requests.Session()
@@ -297,7 +297,7 @@ EXAMPLE:
 		with open(fileLocation, "wb") as location:
 			location.write(r.content)
 
-		print 'download complete: ' + fileLocation
+		print('download complete: ' + fileLocation)
 		return fileLocation
 
 	"""
@@ -466,7 +466,7 @@ def NERSC_ArchivePath(filename,useraccount=userDefault,archivepath=NERSC_Default
 	for i in range(len(filename)):
 		#pathOut.append( archivepath +useraccount+ "/" + filename[i] + "/raw/" + filename[i]+".h5" )
 		pathOut.append( archivepath +useraccount+ "/" + filename[i] + "/raw/")
-	print pathOut
+	print(pathOut)
 	return pathOut
 
 # =============================================================================
@@ -527,8 +527,8 @@ def NERSC_RetreiveData(filename,
 		print(archivepath,useraccount,filename[i])
 		filePathIn.append( archivepath +useraccount+ "/" + filename[i] + "/raw/" + filename[i]+".h5" )
 		filePathOut.append( destinationpath + filename[i] + ".h5")
-	logging.info("file path list complete"); print filePathIn
-	logging.info("destination path list complete"); print filePathOut
+	logging.info("file path list complete"); print(filePathIn)
+	logging.info("destination path list complete"); print(filePathOut)
 	
 	# Copy Files to desintation
 	for i in range(len(filename)):
