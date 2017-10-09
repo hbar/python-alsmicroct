@@ -10,3 +10,7 @@
 *.h5
 .metadata
 cookies.txt
+*.tif
+*.tiff
+*.tif~
+*.tiff~

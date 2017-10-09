@@ -3,6 +3,13 @@
 import numexpr as ne # routines for the fast evaluation of array expressions elementwise by using a vector-based virtual machine
 # =============================================================================
 
+def loadDataSet(filepath='./'):
+    #Imports Tomography Dataset
+    if filepath[-1] !='/':
+        filepath=filepath+"/"
+    fileList = glob.glob(filepath,'*.tiff')
+    return fileList
+
 def convert8bit(rec,data_min,data_max):
     rec = rec.astype(np.float32,copy=False)
     df = np.float32(data_max-data_min)

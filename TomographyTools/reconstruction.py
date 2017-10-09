@@ -15,7 +15,7 @@ import warnings
 import importlib
 import xlrd # for importing excel spreadsheets
 from ast import literal_eval # For converting string to tuple
-
+import glob
 
 try:
 	importlib.import_module('pyF3D')
