@@ -182,9 +182,9 @@ recon(
 
 The `image_processing` module contains functions for manipulating image files or reconstructed data. Basic functions like downsampling from 32 bit to 8 bit, scaling, cropping, etc. are included.
 
-**Convert data to 8-bit**
+**Convert Data to 8-bit**
 
-Imports files from a directory, linearly rescales between specified min and max values, the saves in a specified output directory. 
+`convert_DirectoryTo8Bit()` Imports files from a directory, linearly rescales pixels between specified min and max values, converts of 8-bit pixels (0-255), then saves files in a specified output directory. 
 
 ```python
 convert_DirectoryTo8Bit(inputpath='./', 	# path to input directory
@@ -194,10 +194,33 @@ convert_DirectoryTo8Bit(inputpath='./', 	# path to input directory
     filename=None)							# base name for each image file
 ```
 
-If outputpath is not specified, output path is set to inputpath appended with "_8bit". If filename is not specified, filename is set to the original filename appended with "_8bit".
+If outputpath is not specified, output path is set to inputpath appended with "_8bit". If outputpath does not exist, one will be created. If filename is not specified, filename is set to the original filename appended with "_8bit".
+
+`convert_ArrayTo8bit(inputarray,data_min,data_max)` Takes a numpy array 2D or 3D numpy array, rescales between specified min and max pixel values, then converts to array of 8-bit integers (0-255).
 
 
-**Load image stack**
+**Crop Data**
+
+`crop_Directory()` loads directory and crops images to specified x,y,z ranges.
+
+```python
+crop_Directory(inputpath='./',                # takes path to input directory
+    xRange=(0,None),                # min and max crop range in x, default is entire x range
+    yRange=(0,None),                # min and max crop range in y, default is entire y range
+    zRange=(0,None),                # min and max crop range in z, default is entire file list
+    outputpath=None);                # output path: default is inputpath + "_cropped"
+```
+
+`crop_Array()` takes a 2D or 3D numpy array and crops to specified x,y,z ranges.
+
+```python
+crop_Array(inputarray,                # takes 2D or 3D numpy array input
+    xRange=(0,None),                # min and max crop range in x, default is entire x range
+    yRange=(0,None),                # min and max crop range in x, default is entire x range
+    zRange=(0,None))                # min and max crop range in z, default is entire file list
+```
+
+**Load Image Stack**
 
 `load_TiffStack(filepath='./',imagerange='all')` 
 

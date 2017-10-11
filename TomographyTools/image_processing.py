@@ -20,7 +20,7 @@ def get_fileList(filepath='./', extensions=("tif","tiff")):
 
 # -----------------------------------------------------------------------------
 # loads images in directory into a numpy array
-def load_DataStack(filepath='./',imagerange=(1000,1100)):
+def load_DataStack(filepath='./',imagerange='all'):
     #Imports Tomography Dataset
     fileList = get_fileList(filepath)
 
@@ -63,7 +63,7 @@ def convert_DirectoryTo8Bit(inputpath='./', data_min=-10.0, data_max=10.0, outpu
 
     for iImage in range(len(fileList)):
         image32 = io.imread(fileList[iImage])
-        image8 = convert8bit(image32,data_min,data_max)
+        image8 = convert_ArrayTo8bit(image32,data_min,data_max)
         outputfilepath = outputpath.rstrip('/')+'/'+filename + '_' + '{:04d}'.format(iImage) + '.tiff'
         io.imsave(outputfilepath,image8)
         print(outputfilepath)
@@ -73,8 +73,8 @@ def convert_DirectoryTo8Bit(inputpath='./', data_min=-10.0, data_max=10.0, outpu
 
 # -----------------------------------------------------------------------------
 
-def convert8bit(rec,data_min,data_max):
-    rec = rec.astype(np.float32,copy=False)
+def convert_ArrayTo8bit(inputarray,data_min,data_max):
+    rec = inputarray.astype(np.float32,copy=False)
     df = np.float32(data_max-data_min)
     mn = np.float32(data_min)
     scl = ne.evaluate('0.5+255*(rec-mn)/df',truediv=True)
@@ -121,7 +121,22 @@ def crop_Directory(inputpath='./',xRange=(0,None),yRange=(0,None),zRange=(0,None
         io.imsave(outputfilepath,image_cropped)
         print(outputfilepath)
         #print(iImage)
-    
+# -----------------------------------------------------------------------------
+
+def crop_Array(inputarray,xRange=(0,None),yRange=(0,None),zRange=(0,None)):
+
+    # if no input give set range to maximum
+    if xRange[1] == None:
+        xRange[1] = len(image[:,0])
+    if yRange[1] == None:
+        yRange[1] = len(image[0,:])
+    if inputarray.ndim==3 and zRange[1] == None:
+        zRange[1] = len(image[0,0,:])
+
+    if inputarray.ndim == 2:
+        outputarray = image[xRange[0]:xRange[1],yRange[0]:yRange[1]]
+    if inputarray.ndim == 3:
+        outputarray = image[xRange[0]:xRange[1],yRange[0]:yRange[1],zRange[0]:zRange[1]]
 
 # -----------------------------------------------------------------------------
 
