@@ -7,6 +7,7 @@ import skimage.external.tifffile as skTiff
 import numexpr as ne # routines for the fast evaluation of array expressions elementwise by using a vector-based virtual machine
 # =============================================================================
 
+# -----------------------------------------------------------------------------
 # generates list of all files in a directory with the desired extension
 def get_fileList(filepath='./', extensions=("tif","tiff")):
     filepath = filepath.rstrip('/')
@@ -17,6 +18,7 @@ def get_fileList(filepath='./', extensions=("tif","tiff")):
         fileList.extend(files)
     return(fileList)
 
+# -----------------------------------------------------------------------------
 # loads images in directory into a numpy array
 def load_DataStack(filepath='./',imagerange=(1000,1100)):
     #Imports Tomography Dataset
@@ -37,8 +39,9 @@ def load_DataStack(filepath='./',imagerange=(1000,1100)):
     for iImage in range(imageMin,imageMax):
         dataset[iImage-imageMin,:,:] = io.imread(fileList[iImage])
         print(iImage)
-    return dataset
+    return dataset    
 
+# -----------------------------------------------------------------------------
 
 def convert_DirectoryTo8Bit(inputpath='./', data_min=-10.0, data_max=10.0, outputpath=None,filename=None):
 
@@ -68,6 +71,7 @@ def convert_DirectoryTo8Bit(inputpath='./', data_min=-10.0, data_max=10.0, outpu
 
     print("conversion complete")
 
+# -----------------------------------------------------------------------------
 
 def convert8bit(rec,data_min,data_max):
     rec = rec.astype(np.float32,copy=False)
@@ -78,6 +82,49 @@ def convert8bit(rec,data_min,data_max):
     ne.evaluate('where(scl>255,255,scl)',out=scl)
     return scl.astype(np.uint8)
 
+# -----------------------------------------------------------------------------
+
+def crop_Directory(inputpath='./',xRange=(0,None),yRange=(0,None),zRange=(0,None),outputpath=None):
+
+    fileList= get_fileList(inputpath)
+
+    image = io.imread(fileList[0])
+
+    # if no input give set range to maximum
+    if xRange[1] == None:
+        xRange[1] = len(image[:,0])
+    if yRange[1] == None:
+        yRange[1] = len(image[0,:])
+    if zRange[1] == None:
+        zRange[1] = len(fileList)
+
+    # Strip file extension, etc from first filename in list
+    if filename == None:
+        filename = fileList[0].split('/')[-1]
+        filename = filename.rstrip('.tif')
+        filename = filename.rstrip('0')
+        filename = filename +"_cropped"
+
+    # Autogenerate output path
+    if outputpath == None:
+        outputpath = inputpath.rstrip('/') + "_croppped/"
+
+    # create output directory if it does not exist
+    if not os.path.exists(outputpath):
+        os.makedirs(outputpath)
+
+    # crop and save images
+    for iImage in range(zRange[0],zRange[1]):
+        image = io.imread(fileList[iImage])
+        image_cropped = image[xRange[0]:xRange[1],yRange[0]:yRange[1]]
+        outputfilepath = outputpath.rstrip('/')+'/'+filename + '_' + '{:04d}'.format(iImage) + '.tiff'
+        io.imsave(outputfilepath,image_cropped)
+        print(outputfilepath)
+        #print(iImage)
+    
+
+# -----------------------------------------------------------------------------
+
 def save_TiffStack(dataset,filename="image",outputPath="./"):
     filename = filename.rstrip(".tiff")
     filename = filename.rstrip(".tif")
@@ -86,9 +133,14 @@ def save_TiffStack(dataset,filename="image",outputPath="./"):
     skTiff.imsave(outputFile,dataset)
     print("save complete: " + outputFile)
 
+
+# -----------------------------------------------------------------------------
+
 def convert_DirectoryToTiffStack(filepath='./'):
     pass
 
+
+# -----------------------------------------------------------------------------
 def convert_ArrayToDirectory(dataset,filename="image",outputPath="./"):
     pass
 
