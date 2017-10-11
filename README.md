@@ -177,3 +177,30 @@ recon(
 	projIgnoreList = None,      #projections to be ignored in the reconstruction (for simplicity in the code, they will not be removed and will be processed as all other projections but will be set to zero absorption right before reconstruction.
 	):
 ```
+
+## Image Processing
+
+The `image_processing` module contains functions for manipulating image files or reconstructed data. Basic functions like downsampling from 32 bit to 8 bit, scaling, cropping, etc. are included.
+
+**Convert data to 8-bit**
+
+Imports files from a directory, linearly rescales between specified min and max values, the saves in a specified output directory. 
+
+```python
+convert_DirectoryTo8Bit(inputpath='./', 	# path to input directory
+	data_min = -10.0, 						# minimum pixel value in 32 bit image
+    data_max = 10.0, 						# maximum pixel value in 32 bit image
+    outputpath=None,						# path to output directory
+    filename=None)							# base name for each image file
+```
+
+If outputpath is not specified, output path is set to inputpath appended with "_8bit". If filename is not specified, filename is set to the original filename appended with "_8bit".
+
+
+**Load image stack**
+
+`load_TiffStack(filepath='./',imagerange='all')` 
+
+Loads files in the directory `filepath`. `imagerange` gives the range of images to upload. The default value is 'all' however smaller ranges can be specified with a tuple such that `imagerange=(firstImage,lastImage)`. For large 32 bit images stacks this function may run into memory limitations.
+
+
