@@ -220,7 +220,9 @@ crop_Array(inputarray,                # takes 2D or 3D numpy array input
     zRange=(0,None))                # min and max crop range in z, default is entire file list
 ```
 
-**Load Image Stack**
+**Load Data**
+
+`get_fileList(inputpath='./', extensions=("tif","tiff"))` Finds all files in a directory `inputpath` having a extension specified by `extensions`. Default extensions are "tif" and "tiff".
 
 `load_TiffStack(filepath='./',imagerange='all')` 
 

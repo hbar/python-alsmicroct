@@ -9,14 +9,20 @@ import numexpr as ne # routines for the fast evaluation of array expressions ele
 
 # -----------------------------------------------------------------------------
 # generates list of all files in a directory with the desired extension
-def get_fileList(filepath='./', extensions=("tif","tiff")):
-    filepath = filepath.rstrip('/')
+def get_fileList(inputpath='./', extensions=("tif","tiff")):
+    inputpath = inputpath.rstrip('/')
     fileList=[]
+
+    # iterate over file extensions using glob to find files in directory
     for iExt in range(len(extensions)):
-        searchterm = filepath+'/*.'+extensions[iExt]
+        searchterm = inputpath+'/*.'+extensions[iExt].lstrip('.')
         files = glob.glob(searchterm)
         fileList.extend(files)
     return(fileList)
+
+# -----------------------------------------------------------------------------
+
+def get_file
 
 # -----------------------------------------------------------------------------
 # loads images in directory into a numpy array
@@ -43,7 +49,10 @@ def load_DataStack(filepath='./',imagerange='all'):
 
 # -----------------------------------------------------------------------------
 
-def convert_DirectoryTo8Bit(inputpath='./', data_min=-10.0, data_max=10.0, outputpath=None,filename=None):
+def convert_DirectoryTo8Bit(inputpath='./', data_min=-10.0, data_max=10.0, basepath=None, outputpath=None,filename=None):
+
+    if type(basepath)==str:
+        inputpath = basepath.rstrip('/') +'/'+inputpath.lstrip('/')
 
     fileList= get_fileList(inputpath)
 
@@ -52,7 +61,9 @@ def convert_DirectoryTo8Bit(inputpath='./', data_min=-10.0, data_max=10.0, outpu
         filename = fileList[0].split('/')[-1]
         filename = filename.rstrip('.tif')
         filename = filename.rstrip('0')
+        filename = filename.rstrip('_')
         filename = filename +"_8bit"
+        filename = filename.replace('.h5', '')
 
     if outputpath == None:
         outputpath = inputpath.rstrip('/') + "_8bit/"
@@ -66,7 +77,7 @@ def convert_DirectoryTo8Bit(inputpath='./', data_min=-10.0, data_max=10.0, outpu
         image8 = convert_ArrayTo8bit(image32,data_min,data_max)
         outputfilepath = outputpath.rstrip('/')+'/'+filename + '_' + '{:04d}'.format(iImage) + '.tiff'
         io.imsave(outputfilepath,image8)
-        print(outputfilepath)
+        print('complete: '+ outputfilepath.split('/')[-1])
         #print(iImage)
 
     print("conversion complete")
@@ -103,7 +114,9 @@ def crop_Directory(inputpath='./',xRange=(0,None),yRange=(0,None),zRange=(0,None
         filename = fileList[0].split('/')[-1]
         filename = filename.rstrip('.tif')
         filename = filename.rstrip('0')
+        filename = filename.rstrip('_')
         filename = filename +"_cropped"
+        filename = filename.replace('.h5','')
 
     # Autogenerate output path
     if outputpath == None:
