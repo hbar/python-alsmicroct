@@ -190,7 +190,8 @@ The `image_processing` module contains functions for manipulating image files or
 convert_DirectoryTo8Bit(inputpath='./', 	# path to input directory
 	data_min = -10.0, 						# minimum pixel value in 32 bit image
     data_max = 10.0, 						# maximum pixel value in 32 bit image
-    outputpath=None,						# path to output directory
+    basepath = None,                        # prepends input path
+    outputpath = None,                      # path to output directory
     filename=None)							# base name for each image file
 ```
 
