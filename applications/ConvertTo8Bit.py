@@ -1,14 +1,14 @@
 import sys
-sys.path.append("[Local Path]/python-TomographyTools/")
-import TomographyTools.image_processing as ip
+sys.path.append("[local path]/python-TomographyTools")
+import microct_toolbox.image_processing as ip
 
-path0 = "/home/[username]@als.lbl.gov/data-scratch/[DirectoryName]/"
+path0 = "/home/[username]@als.lbl.gov/data-scratch/[dataset]"
 
-inputDirectory = ["dataDirectory1","dataDirectory2","dataDirectory3"]
+inputDirectory = ["[dataset1]","[dataset2]","[dataset3]" ]
 
-MIN = -10.0
-MAX = 10.0
+MIN = -10.0 # minimum pixel value for scaling
+MAX = 25.0 # maximum pixel value for scaling
 
-for i in range(len(inputDirectories)):
+for i in range(len(inputDirectory)):
     ip.convert_DirectoryTo8Bit(inputDirectory[i],data_min=MIN,data_max=MAX,basepath=path0)
 
