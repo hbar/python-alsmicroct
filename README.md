@@ -19,22 +19,22 @@ Tomography analysis requires proessing of large (many GB) datasets that contain 
 
 ## Repo File Structure
 
-`TomographyTools/` contains functions and classes used for managing data pipeline and data analysis
+`microct_toolbox/` contains functions and classes used for managing data pipeline and data analysis
 
-`applications/` contains programs that utilize functions from TomographyTools and tomopy.
+`applications/` contains programs that utilize functions from microct_toolbox and tomopy.
 
 `filepath/` contains input files that provide lists of paths the datasets that are to be reconstructed or processed.
 
 `batch/` contains .slurm scripts that are used to submit jobs to the [NERSC] supercomputer.
 
-`tests/` contains test cases for functions in TomographyTools.
+`tests/` contains test cases for functions in microct_toolbox.
 
 [NERSC]: http://www.nersc.gov/
 
 
 ## SPOT Suite API Commands
 
-SPOT Suite is an online platform for storage and datamanagement of ALS data on NERSC. In this library commands commands and data requests can be sent to the SPOT API using functions contained in a class called `SpotSession`. This class utilizes python's `requests` library to communicate with the API. This class is available in `TomographyTools.data_management` toolkit.
+SPOT Suite is an online platform for storage and datamanagement of ALS data on NERSC. In this library commands commands and data requests can be sent to the SPOT API using functions contained in a class called `SpotSession`. This class utilizes python's `requests` library to communicate with the API. This class is available in `microct_toolbox.data_management` toolkit.
 
 #### `SpotSession(username='default')`
 
@@ -45,7 +45,7 @@ Creating an instance of the `SpotSession()` class establishes a session with the
 ```python
 import sys
 sys.path.append("[local path]/python-TomographyTools")
-import TomographyTools.data_management as dm
+import microct_toolbox.data_management as dm
 
 s = dm.SpotSession()
 
@@ -98,7 +98,7 @@ The reconstruction module serves a wrapper to interface with the the tomopy libr
 ```python
 import sys
 sys.path.append("[local path]/python-TomographyTools")
-from TomographyTools.reconstruction import recon
+from microct_toolbox.reconstruction import recon
 
 recon([dataset],cor=[Center of Rotation])
 ```
