@@ -1,7 +1,7 @@
 from distutils.core import setup
 
 setup(
-    name='microct_toolbox',
+    name='alsmicroct',
     version='0.1dev',
     author='H.S.Barnard, D.Y.Parkinson',
     packages=['alsmicroct',],
