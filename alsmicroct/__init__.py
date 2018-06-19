@@ -25,6 +25,6 @@ import logging
 logging.basicConfig(level=logging.INFO, stream=sys.stdout,format='%(message)s')
 
 
-from reconstruction import reconstruction
+from reconstruction import recon
 #from TomographyTools import image_processing
 #from TomographyTools import data_management
