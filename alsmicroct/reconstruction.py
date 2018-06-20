@@ -1,7 +1,5 @@
 from __future__ import print_function
 import time
-import tomopy
-import dxchange
 import h5py
 import numpy as np
 import numexpr as ne
@@ -10,13 +8,23 @@ import os
 import sys
 import scipy.ndimage.filters as snf
 import concurrent.futures as cf
-from tomopy.util import mproc
 import warnings
 import importlib
 import xlrd # for importing excel spreadsheets
 from ast import literal_eval # For converting string to tuple
 import glob
 
+try:
+    import tomopy
+    from tomopy.util import mproc
+except:
+    print("warning: tomopy is not available")
+
+try:
+    import dxchange
+except:
+    print("warning: dxchange is not available")
+    
 try:
     importlib.import_module('pyF3D')
     import pyF3D
