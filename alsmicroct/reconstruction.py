@@ -464,7 +464,15 @@ def recon(
     print("End Time: "+time.strftime("%a, %d %b %Y %H:%M:%S +0000", time.localtime()))
     print('It took {:.3f} s to process {}'.format(time.time()-start_time,inputPath+filename))
 
+def recon_from_spreadsheet(filePath):
+    """
+    Runs recon() function using data read from spreadsheet
+    """
+    parameterList = spreadsheet(filePath)
 
+    for i in range(len(parameterlist)):
+        recon(parameterList[i])
+    
 
 
 def convert8bit(rec,data_min,data_max):
@@ -577,7 +585,7 @@ def convertthetype(val):
             pass
 
 #Converts spreadsheet.xlsx file with headers into dictionaries
-def spreadsheet(filepath):
+def read_spreadsheet(filepath):
     workbook=xlrd.open_workbook(filepath)
     worksheet = workbook.sheet_by_index(0)
 
