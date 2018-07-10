@@ -1,6 +1,6 @@
-# python-TomographyTools
+# python-alsmicroct
 
-This repo contains python code for reconstructing and processing x-ray tomography datasets generated the advanced light source.
+This repo contains python code for reconstructing and processing x-ray micro tomography (microCT) datasets generated the advanced light source (ALS).
 
 ## Overview:
 [Beamline 8.3.2][BL832] is located at the Advanced Light Source [(ALS)][ALS] at Lawrence Berkeley National Laboratory [(LBNL)][LBNL]. 8.3.2 is a synchrotron x-ray endstation that is devoted to x-ray microtomography. This repository provides a toolkit for reconstruction and processing data produced by the x-ray tomography performed at 8.3.2.
