@@ -19,15 +19,15 @@ Tomography analysis requires proessing of large (many GB) datasets that contain 
 
 ## Repo File Structure
 
-`microct_toolbox/` contains functions and classes used for managing data pipeline and data analysis
+`alsmicroct/` contains functions and classes used for managing data pipeline and data analysis
 
-`applications/` contains programs that utilize functions from microct_toolbox and tomopy.
+`applications/` contains programs that utilize functions from alsmicroct and tomopy.
 
 `filepath/` contains input files that provide lists of paths the datasets that are to be reconstructed or processed.
 
 `batch/` contains .slurm scripts that are used to submit jobs to the [NERSC] supercomputer.
 
-`tests/` contains test cases for functions in microct_toolbox.
+`tests/` contains test cases for functions in alsmicroct.
 
 [NERSC]: http://www.nersc.gov/
 
