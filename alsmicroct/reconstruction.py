@@ -177,7 +177,7 @@ def recon(
     
     datafile = h5py.File(inputPath+filename, 'r')
     gdata = dict(dxchange.reader._find_dataset_group(datafile).attrs) 
-    pxsize = float(gdata['pxsize'])/10 # /10 to convert unites from mm to cm
+    pxsize = float(gdata['pxsize'])/10 # /10 to convert units from mm to cm
     numslices = int(gdata['nslices'])
     numangles = int(gdata['nangles'])
     angularrange = float(gdata['arange'])
@@ -575,6 +575,146 @@ def remove_outlier1d(arr, dif, size=3, axis=0, ncore=None, out=None):
         out = ne.evaluate('where(abs(arr-tmp)>=dif,tmp,arr)', out=out)
 
     return out
+
+    
+def translate(data,dx=0,dy=0,interpolation=True):
+    """
+    Shifts all projections in an image stack by dx (horizontal) and dy (vertical) pixels. Translation with subpixel resolution is possible with interpolation==True
+    
+    Parameters
+    ----------
+    data: ndarray 
+        Input array, stack of 2D (x,y) images, angle in z
+        
+    dx: int or float
+        desored horizontal pixel shift
+        
+    dy: int or float
+        desired vertical pixel shift
+    
+    interpolation: boolean
+        True calls funtion from sckimage to interpolate image when subpixel shifts are applied
+    
+    Returns
+    -------
+    ndarray
+       Corrected array.
+    """
+
+    Nproj, Nrow, Ncol = data.shape
+    dataOut = np.zeros(data.shape)
+    
+    if interpolation == True:
+        #translateFunction = st.SimilarityTransform(translation=(-dx,dy))
+        M=np.matrix([[1,0,-dx],[0,1,dy],[0,0,1]])
+        translateFunction = st.SimilarityTransform(matrix=M)
+        for n in range(Nproj):
+            dataOut[n,:,:] = st.warp(data[n,:,:], translateFunction)
+            
+    if interpolation == False:
+        Npad = max(dx,dy)        
+        drow = int(-dy) # negative matrix row increments = dy
+        dcol = int(dx)  # matrix column increments = dx
+        for n in range(Nproj):
+            PaddedImage = np.pad(data[n,:,:],Npad,'constant')
+            dataOut[n,:,:] = PaddedImage[Npad-drow:Npad+Nrow-drow,Npad-dcol:Npad+Ncol-dcol]  # shift image by dx and dy, replace original without padding
+            
+ return dataOut
+
+    
+def linear_translation_correction(data,dx=100.5,dy=700.1,interpolation=True):
+
+    """
+    Corrects for a linear drift in field of view (horizontal dx, vertical dy) over time. The first index indicaties time data[time,:,:] in the time series of projections. dx and dy are the final shifts in FOV position.
+    
+    Parameters
+    ----------
+    data: ndarray 
+        Input array, stack of 2D (x,y) images, angle in z
+        
+    dx: int or float
+        total horizontal pixel offset from first (0 deg) to last (180 deg) projection 
+
+    dy: int or float
+        total horizontal pixel offset from first (0 deg) to last (180 deg) projection 
+    
+    interpolation: boolean
+        True calls funtion from sckimage to interpolate image when subpixel shifts are applied
+    
+    Returns
+    -------
+    ndarray
+       Corrected array.
+    """
+
+    Nproj, Nrow, Ncol = data.shape
+    Nproj=10
+    
+    dataOut = np.zeros(data0.shape)
+    
+    dx_n = np.linspace(0,dx,Nproj) # generate array dx[n] of pixel shift for projection n = 0, 1, ... Nproj    
+    dy_n = np.linspace(0,dy,Nproj) # generate array dy[n] of pixel shift for projection n = 0, 1, ... Nproj
+    
+    if interpolation==True:
+        for n in range(Nproj):
+            #translateFunction = st.SimilarityTransform(translation=(-dx_n[n],dy_n[n])) # Generate Translation Function based on dy[n] and dx[n]
+            M=np.matrix([[1,0,-dx_n[n]],[0,1,dy_n[n]],[0,0,1]])
+            translateFunction = st.SimilarityTransform(matrix=M)
+            image_n = data[n,:,:]
+            dataOut[n,:,:] = st.warp(image_n, translateFunction) # Apply translation with interpolation to projection[n]
+            #print(n)
+
+    if interpolation==False:
+        Npad = max(dx,dy)
+        for n in range(Nproj):
+            PaddedImage = np.pad(data[n,:,:],Npad,'constant') # copy single projection and pad with maximum of dx,dy
+            drow = int(round(-dy_n[n])) # round shift to nearest pixel step, negative matrix row increments = dy
+            dcol = int(round(dx_n[n]))  # round shift to nearest pixel step, matrix column increments = dx
+            dataOut[n,:,:] = PaddedImage[Npad-drow:Npad+Nrow-drow,Npad-dcol:Npad+Ncol-dcol] # shift image by dx and dy, replace original without padding
+            #print(n)
+
+    return dataOut
+
+    
+    """
+    Parameters
+    ----------
+    data: ndarray 
+        Input array, stack of 2D (x,y) images, angle in z 
+    pixelshift: float
+        total pixel offset from first (0 deg) to last (180 deg) projection 
+    
+    Returns
+    -------
+    ndarray
+       Corrected array.
+    """
+    
+    
+"""Hi Dula,
+This is roughly what I am doing in the script to 'unspiral' the superweave data:
+spd = float(int(sys.argv[2])/2048)
+x = np.zeros((2049,200,2560), dtype=np.float32)
+blks = np.round(np.linspace(0,2049,21)).astype(np.int)
+for i in range(0,20):
+    dat = dxchange.read_als_832h5(fn, ind_tomo=range(blks[i],blks[i+1]))
+    prj = tomopy.normalize_nf(dat[0],dat[1],dat[2],dat[3])
+    for ik,j in enumerate(range(blks[i],blks[i+1])):
+        l = prj.shape[1]//2-j*spd
+        li = int(l)
+        ri = li+200
+        fc = l-li
+        x[j] = (1-fc)*prj[ik,li:ri]
+        x[j] += fc*prj[ik,li+1:ri+1]
+dxchange.writer.write_hdf5(x, fname=fn[:-3]+'_unspiral.h5', overwrite=True, gname='tmp', dname='tmp', appendaxis=0)
+
+This processes the (roughly) central 200 slices, and saves it to a new file. The vertical speed is one of the input arguments, and I simply estimate it manually by looking at the first and last projection, shifting them by 'np.roll'. The input argument is the total number of pixels that are shifted over the whole scan (which is then converted to pixels per projection by dividing by the number of projections-1).
+I don't really remember why I wrote my own code, but maybe I was running into problems using scikit-image as well. The current code uses linear interpolation, and gives pretty good results for the data I tested.
+
+Best,
+
+Daniel"""
+    
     
 def convertthetype(val):
     constructors = [int, float, str]
