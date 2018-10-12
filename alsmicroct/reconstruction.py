@@ -111,6 +111,9 @@ def recon(
     kev = 24, # energy level (phase retrieval)
     butterworth_cutoff = 0.25, #0.1 would be very smooth, 0.4 would be very grainy (reconstruction)
     butterworth_order = 2, # for reconstruction
+    doTranslationCorrection = False, # correct for linear drift during scan
+    xshift = 0, # undesired dx transation correction (from 0 degree to 180 degree proj)
+    yshift = 0, # undesired dy transation correction (from 0 degree to 180 degree proj)
     doPolarRing = False, # ring removal
     Rarc=30, # min angle needed to be considered ring artifact (ring removal)
     Rmaxwidth=100, # max width of rings to be filtered (ring removal)
@@ -423,6 +426,10 @@ def recon(
                 
                 elif func_name == 'phase_retrieval':
                     tomo = tomopy.retrieve_phase(tomo, pixel_size=pxsize, dist=propagation_dist, energy=kev, alpha=alphaReg, pad=True)
+                
+                elif func_name == 'translation_correction':
+                    tomo = linear_translation_correction(tomo,dx=xshift,dy=yshift,interpolation=False):
+                    
                 elif func_name == 'recon_mask':
                     tomo = tomopy.pad(tomo, 2, npad=npad, mode='edge')
 
@@ -651,8 +658,9 @@ def linear_translation_correction(data,dx=100.5,dy=700.1,interpolation=True):
     Nproj=10
     
     dataOut = np.zeros(data0.shape)
-    
-    dx_n = np.linspace(0,dx,Nproj) # generate array dx[n] of pixel shift for projection n = 0, 1, ... Nproj    
+        
+    dx_n = np.linspace(0,dx,Nproj) # generate array dx[n] of pixel shift for projection n = 0, 1, ... Nproj
+
     dy_n = np.linspace(0,dy,Nproj) # generate array dy[n] of pixel shift for projection n = 0, 1, ... Nproj
     
     if interpolation==True:
