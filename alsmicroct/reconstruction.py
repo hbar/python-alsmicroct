@@ -800,7 +800,7 @@ def main():
 
 # H.S.Barnard Spreadsheet interpreter
     if parametersfile.split('.')[-1]=='xlsx':
-        functioninput = spreadsheet(parametersfile)
+        functioninput = read_spreadsheet(parametersfile)
         for i in range(len(functioninput)):
             recon(**functioninput[i])
 
